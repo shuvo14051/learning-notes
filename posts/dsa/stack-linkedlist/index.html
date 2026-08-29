@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-root="../../">
+<html lang="en" data-root="../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -14,7 +14,9 @@
     <link rel="stylesheet" href="../../../assets/css/style.css" />
   </head>
 
-  <body data-topic="dsa" data-post="new-post">
+  <body data-topic="dsa" data-post="stack-linkedlist">
+    <div data-header></div>
+
     <!-- Automatic linked-list stack visualization -->
 
     <main class="shell article-layout">
@@ -486,6 +488,8 @@
               --ink: #172033;
               --muted: #64748b;
               margin: 1.25rem 0;
+              width: 100%;
+              max-width: 100%;
               overflow: hidden;
               border: 1px solid #ddd6fe;
               border-radius: 1.25rem;
@@ -572,6 +576,7 @@
             .stack-lab__memory,
             .stack-lab__code {
               min-width: 0;
+              max-width: 100%;
               padding: 1rem 1.25rem;
             }
 
@@ -710,7 +715,7 @@
               line-height: 1.4;
             }
 
-            @media (max-width: 760px) {
+            @media (max-width: 900px) {
               .stack-lab__workspace {
                 grid-template-columns: 1fr;
               }

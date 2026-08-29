@@ -14,16 +14,14 @@ window.BLOG_POSTS.push(
     path: "posts/dsa/singly-linked-list-insertion/",
   },
   {
-  title: "Stack using LinkedList",
-  slug: "stack-linkedlist",
-  topic: "DSA",
-  topicSlug: "dsa",
-  date: "August 24, 2026",
-  description: "A short description displayed on the post card.",
-  color: "navy",
-  symbol: "{}",
-  path: "posts/dsa/stack-linkedlist"
-},
-  
- 
+    title: "Stack using LinkedList",
+    slug: "stack-linkedlist",
+    topic: "DSA",
+    topicSlug: "dsa",
+    date: "August 24, 2026",
+    description: "A short description displayed on the post card.",
+    color: "navy",
+    symbol: "{}",
+    path: "posts/dsa/stack-linkedlist/",
+  },
 );
