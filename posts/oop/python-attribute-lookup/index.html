@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Learn Python's attribute lookup order, including instance and class dictionaries, descriptors, inheritance, __getattribute__, and __getattr__."
+    />
+
+    <title>Python Attribute Lookup Rules | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="oop" data-post="python-attribute-lookup">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Object-Oriented Programming</p>
+
+          <h1>Python Attribute Lookup Rules</h1>
+
+          <p>
+            Follow the real lookup order through data descriptors, instance
+            attributes, class attributes, inheritance, and fallback behavior.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-08-28">August 28, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <p>
+            Python attribute lookup can sound intimidating because it involves
+            terms such as descriptors, <code>__getattribute__</code>,
+            <code>__getattr__</code>, and the method resolution order. The
+            behavior becomes predictable once you know the priority rules.
+          </p>
+
+          <section id="attribute-storage">
+            <h2>1. Where attributes are stored</h2>
+
+            <h3>The instance dictionary</h3>
+
+            <p>
+              Most ordinary Python objects store their instance attributes in
+              <code>obj.__dict__</code>. Classes that use <code>__slots__</code>
+              may work differently.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    pass
+
+
+person = Person()
+person.name = "Ahamed"
+
+print(person.__dict__)
+# {'name': 'Ahamed'}</code></pre>
+
+            <h3>The class dictionary</h3>
+
+            <p>
+              A class has its own namespace, exposed as a read-only mapping by
+              <code>ClassName.__dict__</code>. It contains class attributes,
+              functions, properties, and other descriptors.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    species = "human"
+
+    def greet(self):
+        return "Hello"
+
+
+print(Person.__dict__["species"])
+print(Person.__dict__["greet"])</code></pre>
+          </section>
+
+          <section id="lookup-hooks">
+            <h2>2. The two lookup hooks</h2>
+
+            <h3><code>__getattribute__</code>: the gatekeeper</h3>
+
+            <p>Every explicit instance attribute access goes through:</p>
+
+            <pre><code>obj.__getattribute__("attribute_name")</code></pre>
+
+            <p>
+              In other words, evaluating <code>obj.x</code> invokes the
+              attribute-lookup machinery implemented by
+              <code>__getattribute__</code>. You can override it, but doing so
+              affects every attribute access and can easily cause infinite
+              recursion.
+            </p>
+
+            <h3><code>__getattr__</code>: the fallback</h3>
+
+            <p>
+              <code>__getattr__</code> is considered only after normal lookup
+              fails with <code>AttributeError</code>.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    def __getattr__(self, name):
+        return f"{name!r} was not found"
+
+
+person = Person()
+print(person.age)
+# 'age' was not found</code></pre>
+
+            <div class="callout">
+              <code>__getattribute__</code> handles every normal lookup.
+              <code>__getattr__</code> is the last-chance fallback when that
+              lookup cannot produce an attribute.
+            </div>
+          </section>
+
+          <section id="lookup-order">
+            <h2>3. The attribute lookup order</h2>
+
+            <p>For an expression such as <code>obj.x</code>, remember this order:</p>
+
+            <ol>
+              <li>
+                Search the object's class hierarchy for a
+                <strong>data descriptor</strong> named <code>x</code>.
+              </li>
+              <li>Check the instance dictionary for <code>x</code>.</li>
+              <li>
+                Search the class hierarchy for a
+                <strong>non-data descriptor</strong> or ordinary class attribute
+                named <code>x</code>.
+              </li>
+              <li>
+                If normal lookup raises <code>AttributeError</code>, use
+                <code>__getattr__</code> when it is defined.
+              </li>
+            </ol>
+
+            <div class="callout">
+              <strong>Priority:</strong> data descriptor → instance dictionary →
+              non-data descriptor or class attribute →
+              <code>__getattr__</code>.
+            </div>
+
+            <p>
+              Searches of the class hierarchy follow the method resolution order
+              (MRO), so inheritance is part of both class-level searches rather
+              than a completely separate final step.
+            </p>
+          </section>
+
+          <section id="data-descriptors">
+            <h2>4. Data descriptors take priority</h2>
+
+            <p>
+              A descriptor is an object stored on a class that participates in
+              attribute access. A descriptor defining <code>__set__</code> or
+              <code>__delete__</code> in addition to <code>__get__</code> is a
+              data descriptor. Properties are the most familiar example.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    @property
+    def name(self):
+        return "Property Name"
+
+
+person = Person()
+person.__dict__["name"] = "Instance Name"
+
+print(person.__dict__["name"])  # Instance Name
+print(person.name)              # Property Name</code></pre>
+
+            <p>
+              The instance dictionary really contains a value named
+              <code>name</code>, but <code>person.name</code> still invokes the
+              property. The data descriptor is checked first.
+            </p>
+
+            <div class="callout">
+              <strong>Interview rule:</strong> A data descriptor takes priority
+              over an entry with the same name in the instance dictionary.
+            </div>
+          </section>
+
+          <section id="instance-dictionary">
+            <h2>5. The instance dictionary comes next</h2>
+
+            <p>
+              If lookup finds no data descriptor with the requested name,
+              Python checks the instance's own attributes.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    pass
+
+
+person = Person()
+person.age = 30
+
+print(person.age)          # 30
+print(person.__dict__)     # {'age': 30}</code></pre>
+
+            <p>
+              No descriptor controls <code>age</code>, so Python returns the
+              value found in <code>person.__dict__</code>.
+            </p>
+          </section>
+
+          <section id="class-and-methods">
+            <h2>6. Class attributes and ordinary methods</h2>
+
+            <p>
+              If the instance does not supply the name, lookup can return an
+              ordinary attribute from the class hierarchy.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    category = "user"
+
+    def greet(self):
+        return "Hello"
+
+
+person = Person()
+
+print(person.category)  # user
+print(person.greet)     # &lt;bound method Person.greet ...&gt;</code></pre>
+
+            <p>
+              The string <code>category</code> is returned directly. The function
+              <code>greet</code> behaves differently because functions implement
+              <code>__get__</code>, making them non-data descriptors. Access
+              through the instance creates a bound method.
+            </p>
+
+            <div class="callout">
+              Functions stored in classes are non-data descriptors. Their
+              descriptor behavior is what binds an instance to an ordinary
+              instance method.
+            </div>
+          </section>
+
+          <section id="inheritance-mro">
+            <h2>7. Parent classes and the MRO</h2>
+
+            <p>
+              A class-level search follows the class's method resolution order.
+              The MRO tells Python which class to inspect first, then next.
+            </p>
+
+            <pre class="python-code"><code>class A:
+    x = 10
+
+
+class B(A):
+    pass
+
+
+b = B()
+
+print(B.__mro__)
+print(b.x)  # 10</code></pre>
+
+            <p>
+              Python does not find <code>x</code> on the instance or on
+              <code>B</code>, so the class-hierarchy search continues to
+              <code>A</code> and returns <code>10</code>.
+            </p>
+          </section>
+
+          <section id="getattr-fallback">
+            <h2>8. <code>__getattr__</code> is the last chance</h2>
+
+            <pre class="python-code"><code>class Person:
+    def __getattr__(self, name):
+        return "Not found"
+
+
+person = Person()
+print(person.salary)  # Not found</code></pre>
+
+            <p>
+              No earlier lookup stage can provide <code>salary</code>, so Python
+              invokes <code>__getattr__</code>. Existing attributes do not use
+              this fallback.
+            </p>
+
+            <p>
+              A production implementation should often raise
+              <code>AttributeError</code> for names it cannot handle. Returning a
+              value for every missing name can hide spelling mistakes.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    def __getattr__(self, name):
+        if name == "display_name":
+            return "Anonymous"
+
+        raise AttributeError(
+            f"{type(self).__name__!s} has no attribute {name!r}"
+        )</code></pre>
+          </section>
+
+          <section id="descriptor-comparison">
+            <h2>9. Data versus non-data descriptors</h2>
+
+            <p>
+              The essential difference is their priority relative to the
+              instance dictionary.
+            </p>
+
+            <ul>
+              <li>
+                A <strong>non-data descriptor</strong> defines
+                <code>__get__</code> but not <code>__set__</code> or
+                <code>__delete__</code>. An instance attribute can shadow it.
+              </li>
+              <li>
+                A <strong>data descriptor</strong> defines
+                <code>__set__</code> or <code>__delete__</code> and usually
+                <code>__get__</code>. It takes priority over the instance
+                dictionary.
+              </li>
+            </ul>
+
+            <h3>Normal method: a non-data descriptor</h3>
+
+            <pre class="python-code"><code>class Person:
+    def greet(self):
+        return "Hello"
+
+
+person = Person()
+print(person.greet())  # Hello
+
+person.greet = "Overwritten"
+print(person.greet)    # Overwritten</code></pre>
+
+            <p>
+              An ordinary function supplies <code>__get__</code> but not
+              <code>__set__</code>. After the assignment, the instance
+              dictionary contains <code>greet</code>. Instance lookup wins over
+              the non-data descriptor on the class.
+            </p>
+
+            <pre class="python-code"><code>print(person.__dict__)
+# {'greet': 'Overwritten'}</code></pre>
+
+            <h3>Property: a data descriptor</h3>
+
+            <pre class="python-code"><code>class Person:
+    @property
+    def greet(self):
+        return "Hello"
+
+
+person = Person()
+print(person.greet)  # Hello
+
+person.greet = "Overwritten"
+# AttributeError: property 'greet' of 'Person' object has no setter</code></pre>
+
+            <p>
+              The property routes the assignment through its descriptor logic.
+              Because no setter exists, it raises <code>AttributeError</code>
+              instead of adding <code>greet</code> to the instance dictionary.
+            </p>
+
+            <div class="callout">
+              <strong>Final comparison:</strong> An instance attribute can
+              shadow an ordinary method. A property remains in control because
+              it is a data descriptor.
+            </div>
+          </section>
+
+          <section id="summary">
+            <h2>Summary</h2>
+
+            <ul>
+              <li>
+                <code>__getattribute__</code> drives normal instance attribute
+                access.
+              </li>
+              <li>Data descriptors take priority over instance attributes.</li>
+              <li>
+                Instance attributes take priority over non-data descriptors and
+                ordinary class attributes.
+              </li>
+              <li>Class searches follow the MRO.</li>
+              <li>
+                <code>__getattr__</code> handles names that normal lookup cannot
+                resolve.
+              </li>
+            </ul>
+
+            <div class="callout">
+              Once you know the priority order, properties, bound methods,
+              instance shadowing, and inherited attributes all follow the same
+              lookup system.
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

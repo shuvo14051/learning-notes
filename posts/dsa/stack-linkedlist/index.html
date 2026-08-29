@@ -1,0 +1,1295 @@
+<!doctype html>
+<html lang="en" data-root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Understand stack push and pop using linked-list diagrams."
+    />
+
+    <title>Implementing a Stack with a Linked List | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="dsa" data-post="new-post">
+    <!-- Automatic linked-list stack visualization -->
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Data Structures and Algorithms</p>
+
+          <h1>Implementing a Stack with a Linked List</h1>
+
+          <p>
+            Understand how linked-list stack references move instead of
+            memorizing the code.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-08-24">August 24, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+        <!-- <section
+          class="stack-animation"
+          aria-labelledby="stack-animation-title"
+        >
+          <style>
+            .stack-animation {
+              --visual-accent: #7c3aed;
+              --visual-accent-light: #ede9fe;
+              --visual-green: #059669;
+              --visual-red: #dc2626;
+              margin: 2rem 0 3rem;
+              padding: clamp(1.25rem, 4vw, 2rem);
+              overflow: hidden;
+              border: 1px solid #ddd6fe;
+              border-radius: 1.25rem;
+              background:
+                radial-gradient(
+                  circle at top right,
+                  #ede9fe 0,
+                  transparent 35%
+                ),
+                #ffffff;
+              box-shadow: 0 18px 45px rgba(76, 29, 149, 0.09);
+            }
+
+            .stack-animation__header {
+              display: flex;
+              align-items: flex-start;
+              justify-content: space-between;
+              gap: 1rem;
+              margin-bottom: 2rem;
+            }
+
+            .stack-animation__header h2 {
+              margin: 0 0 0.35rem;
+              font-size: clamp(1.35rem, 4vw, 1.8rem);
+            }
+
+            .stack-animation__header p {
+              margin: 0;
+              color: #64748b;
+            }
+
+            .stack-animation__badge {
+              flex: 0 0 auto;
+              padding: 0.45rem 0.75rem;
+              border-radius: 999px;
+              color: #5b21b6;
+              background: var(--visual-accent-light);
+              font-size: 0.75rem;
+              font-weight: 800;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
+            }
+
+            .stack-animation__stage {
+              min-height: 210px;
+              padding: 1.5rem 1rem;
+              border: 1px dashed #c4b5fd;
+              border-radius: 1rem;
+              background: rgba(248, 250, 252, 0.88);
+            }
+
+            .stack-animation__head {
+              min-height: 2rem;
+              margin-bottom: 0.7rem;
+              color: var(--visual-accent);
+              font-size: 0.8rem;
+              font-weight: 800;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
+              transition: opacity 300ms ease;
+            }
+
+            .stack-animation__chain {
+              display: flex;
+              align-items: center;
+              min-height: 90px;
+              overflow-x: auto;
+              padding: 0.75rem 0.25rem 1rem;
+            }
+
+            .stack-animation__node {
+              position: relative;
+              display: grid;
+              flex: 0 0 82px;
+              width: 82px;
+              height: 82px;
+              place-content: center;
+              border: 3px solid var(--visual-accent);
+              border-radius: 1rem;
+              color: #2e1065;
+              background: #ffffff;
+              box-shadow: 0 10px 24px rgba(124, 58, 237, 0.16);
+              transition:
+                opacity 600ms ease,
+                transform 600ms ease,
+                border-color 300ms ease;
+            }
+
+            .stack-animation__node strong {
+              font-size: 1.65rem;
+              line-height: 1;
+              text-align: center;
+            }
+
+            .stack-animation__node small {
+              margin-top: 0.4rem;
+              color: #64748b;
+              font-size: 0.65rem;
+              font-weight: 700;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
+            }
+
+            .stack-animation__node.is-new {
+              animation: stack-node-enter 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+            }
+
+            .stack-animation__node.is-removing {
+              opacity: 0;
+              border-color: var(--visual-red);
+              transform: translateY(-45px) scale(0.65) rotate(-8deg);
+            }
+
+            .stack-animation__arrow {
+              flex: 0 0 auto;
+              margin: 0 0.65rem;
+              color: #8b5cf6;
+              font-size: 1.8rem;
+              font-weight: 800;
+            }
+
+            .stack-animation__none {
+              flex: 0 0 auto;
+              color: #64748b;
+              font-family: monospace;
+              font-size: 0.9rem;
+            }
+
+            .stack-animation__message {
+              display: flex;
+              align-items: center;
+              gap: 0.7rem;
+              min-height: 2.75rem;
+              margin-top: 1.25rem;
+              padding: 0.8rem 1rem;
+              border-radius: 0.75rem;
+              color: #334155;
+              background: #f1f5f9;
+              font-size: 0.95rem;
+              transition: background-color 300ms ease;
+            }
+
+            .stack-animation__message::before {
+              content: "";
+              flex: 0 0 0.65rem;
+              width: 0.65rem;
+              height: 0.65rem;
+              border-radius: 50%;
+              background: var(--visual-accent);
+              box-shadow: 0 0 0 5px rgba(124, 58, 237, 0.12);
+            }
+
+            .stack-animation__message[data-operation="push"] {
+              color: #065f46;
+              background: #ecfdf5;
+            }
+
+            .stack-animation__message[data-operation="push"]::before {
+              background: var(--visual-green);
+              box-shadow: 0 0 0 5px rgba(5, 150, 105, 0.12);
+            }
+
+            .stack-animation__message[data-operation="pop"] {
+              color: #991b1b;
+              background: #fef2f2;
+            }
+
+            .stack-animation__message[data-operation="pop"]::before {
+              background: var(--visual-red);
+              box-shadow: 0 0 0 5px rgba(220, 38, 38, 0.12);
+            }
+
+            .stack-animation__progress {
+              height: 4px;
+              margin-top: 1rem;
+              overflow: hidden;
+              border-radius: 999px;
+              background: #e2e8f0;
+            }
+
+            .stack-animation__progress span {
+              display: block;
+              width: 0;
+              height: 100%;
+              border-radius: inherit;
+              background: linear-gradient(90deg, #8b5cf6, #06b6d4);
+            }
+
+            .stack-animation__progress span.is-running {
+              animation: stack-progress 16s linear infinite;
+            }
+
+            @keyframes stack-node-enter {
+              from {
+                opacity: 0;
+                transform: translateY(-45px) scale(0.65) rotate(8deg);
+              }
+
+              to {
+                opacity: 1;
+                transform: translateY(0) scale(1) rotate(0);
+              }
+            }
+
+            @keyframes stack-progress {
+              from {
+                width: 0;
+              }
+
+              to {
+                width: 100%;
+              }
+            }
+
+            @media (max-width: 560px) {
+              .stack-animation__header {
+                display: block;
+              }
+
+              .stack-animation__badge {
+                display: inline-block;
+                margin-top: 0.85rem;
+              }
+
+              .stack-animation__stage {
+                padding-inline: 0.65rem;
+              }
+
+              .stack-animation__node {
+                flex-basis: 68px;
+                width: 68px;
+                height: 68px;
+              }
+
+              .stack-animation__arrow {
+                margin-inline: 0.4rem;
+                font-size: 1.35rem;
+              }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+              .stack-animation__node,
+              .stack-animation__progress span {
+                animation-duration: 1ms !important;
+                transition-duration: 1ms !important;
+              }
+            }
+          </style>
+
+          <div class="stack-animation__header">
+            <div>
+              <h2 id="stack-animation-title">Watch the stack change</h2>
+              <p>New nodes are added and removed only from the head.</p>
+            </div>
+
+            <span class="stack-animation__badge">Auto playing</span>
+          </div>
+
+          <div class="stack-animation__stage">
+            <div class="stack-animation__head" data-stack-head>head &darr;</div>
+
+            <div
+              class="stack-animation__chain"
+              data-stack-chain
+              aria-live="polite"
+              aria-label="Linked-list stack"
+            ></div>
+          </div>
+
+          <div
+            class="stack-animation__message"
+            data-stack-message
+            data-operation="waiting"
+            aria-live="polite"
+          >
+            Starting with an empty stack...
+          </div>
+
+          <div class="stack-animation__progress" aria-hidden="true">
+            <span class="is-running"></span>
+          </div>
+
+          <script>
+            (() => {
+              const visualization =
+                document.currentScript.closest(".stack-animation");
+              const chain = visualization.querySelector("[data-stack-chain]");
+              const headLabel =
+                visualization.querySelector("[data-stack-head]");
+              const message = visualization.querySelector(
+                "[data-stack-message]",
+              );
+
+              const stack = [];
+              const wait = (milliseconds) =>
+                new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+              function setMessage(text, operation = "waiting") {
+                message.textContent = text;
+                message.dataset.operation = operation;
+              }
+
+              function render(newValue = null) {
+                chain.replaceChildren();
+
+                if (stack.length === 0) {
+                  headLabel.textContent = "head \u2192 None";
+
+                  const empty = document.createElement("span");
+                  empty.className = "stack-animation__none";
+                  empty.textContent = "The stack is empty";
+                  chain.append(empty);
+                  return;
+                }
+
+                headLabel.textContent = "head \u2193";
+
+                stack.forEach((value, index) => {
+                  const node = document.createElement("div");
+                  node.className = "stack-animation__node";
+
+                  if (value === newValue && index === 0) {
+                    node.classList.add("is-new");
+                  }
+
+                  node.dataset.value = value;
+
+                  const nodeValue = document.createElement("strong");
+                  nodeValue.textContent = value;
+
+                  const nextLabel = document.createElement("small");
+                  nextLabel.textContent = "next";
+
+                  node.append(nodeValue, nextLabel);
+                  chain.append(node);
+
+                  const arrow = document.createElement("span");
+                  arrow.className = "stack-animation__arrow";
+                  arrow.setAttribute("aria-hidden", "true");
+                  arrow.textContent = "\u2192";
+                  chain.append(arrow);
+                });
+
+                const none = document.createElement("span");
+                none.className = "stack-animation__none";
+                none.textContent = "None";
+                chain.append(none);
+              }
+
+              async function push(value) {
+                setMessage(`Creating Node("${value}")...`, "push");
+                await wait(900);
+
+                stack.unshift(value);
+                render(value);
+
+                setMessage(
+                  `Push ${value}: ${value}.next points to the previous head.`,
+                  "push",
+                );
+                await wait(1500);
+
+                setMessage(
+                  `${value} is now the head (top) of the stack.`,
+                  "push",
+                );
+                await wait(1300);
+              }
+
+              async function pop() {
+                if (stack.length === 0) return;
+
+                const value = stack[0];
+
+                setMessage(
+                  `Pop: save the current head, Node("${value}").`,
+                  "pop",
+                );
+                await wait(1100);
+
+                const firstNode = chain.querySelector(".stack-animation__node");
+
+                if (firstNode) {
+                  firstNode.classList.add("is-removing");
+                }
+
+                setMessage(
+                  `Move head to ${value}.next, then remove ${value}.`,
+                  "pop",
+                );
+                await wait(850);
+
+                stack.shift();
+                render();
+
+                setMessage(`Pop returned "${value}".`, "pop");
+                await wait(1500);
+              }
+
+              async function play() {
+                while (true) {
+                  stack.length = 0;
+                  render();
+
+                  setMessage("Starting with an empty stack...");
+                  await wait(1200);
+
+                  await push("A");
+                  await push("B");
+                  await push("C");
+
+                  setMessage(
+                    "The top is C. Pop removes the newest node first.",
+                  );
+                  await wait(1400);
+
+                  await pop();
+                  await pop();
+
+                  setMessage("The demonstration will restart...");
+                  await wait(1800);
+                }
+              }
+
+              render();
+              play();
+            })();
+          </script>
+        </section> -->
+        <section class="stack-lab" aria-labelledby="stack-lab-title">
+          <style>
+            .stack-lab {
+              --purple: #6d28d9;
+              --purple-soft: #ede9fe;
+              --green: #059669;
+              --red: #dc2626;
+              --ink: #172033;
+              --muted: #64748b;
+              margin: 1.25rem 0;
+              overflow: hidden;
+              border: 1px solid #ddd6fe;
+              border-radius: 1.25rem;
+              color: var(--ink);
+              background: #fff;
+              box-shadow: 0 18px 45px rgba(76, 29, 149, 0.1);
+            }
+
+            .stack-lab * {
+              box-sizing: border-box;
+            }
+
+            .stack-lab__top {
+              display: flex;
+              justify-content: space-between;
+              gap: 1rem;
+              padding: 1rem 1.25rem;
+              border-bottom: 1px solid #e2e8f0;
+              background: linear-gradient(135deg, #faf5ff, #f8fafc);
+            }
+
+            .stack-lab__top h2 {
+              margin: 0 0 0.2rem;
+              font-size: clamp(1.25rem, 3vw, 1.65rem);
+            }
+
+            .stack-lab__top p {
+              margin: 0;
+              color: var(--muted);
+            }
+
+            .stack-lab__size {
+              align-self: flex-start;
+              padding: 0.4rem 0.7rem;
+              border-radius: 999px;
+              color: #5b21b6;
+              background: var(--purple-soft);
+              font-weight: 800;
+              white-space: nowrap;
+            }
+
+            .stack-lab__operations,
+            .stack-lab__controls {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 0.65rem;
+              padding: 0.65rem 1.25rem;
+            }
+
+            .stack-lab button {
+              padding: 0.5rem 0.8rem;
+              border: 1px solid #cbd5e1;
+              border-radius: 0.65rem;
+              color: #334155;
+              background: #fff;
+              font: inherit;
+              font-weight: 750;
+              cursor: pointer;
+            }
+
+            .stack-lab button:hover:not(:disabled) {
+              border-color: var(--purple);
+              color: var(--purple);
+            }
+
+            .stack-lab button[aria-pressed="true"],
+            .stack-lab__controls button:last-child {
+              border-color: var(--purple);
+              color: #fff;
+              background: var(--purple);
+            }
+
+            .stack-lab button:disabled {
+              cursor: not-allowed;
+              opacity: 0.42;
+            }
+
+            .stack-lab__workspace {
+              display: grid;
+              grid-template-columns: minmax(0, 1.35fr) minmax(270px, 0.65fr);
+              border-block: 1px solid #e2e8f0;
+            }
+
+            .stack-lab__memory,
+            .stack-lab__code {
+              min-width: 0;
+              padding: 1rem 1.25rem;
+            }
+
+            .stack-lab__memory {
+              min-height: 215px;
+              background: #f8fafc;
+            }
+
+            .stack-lab__code {
+              color: #dbeafe;
+              background: #111827;
+            }
+
+            .stack-lab__label {
+              margin-bottom: 0.65rem;
+              color: var(--muted);
+              font-size: 0.72rem;
+              font-weight: 850;
+              letter-spacing: 0.1em;
+              text-transform: uppercase;
+            }
+
+            .stack-lab__code .stack-lab__label {
+              color: #94a3b8;
+            }
+
+            .stack-lab__reference {
+              display: flex;
+              align-items: center;
+              min-height: 30px;
+              margin-bottom: 0.45rem;
+              color: var(--purple);
+              font-family: monospace;
+              font-weight: 800;
+            }
+
+            .stack-lab__reference.is-temporary {
+              color: var(--green);
+            }
+
+            .stack-lab__reference.is-hidden {
+              visibility: hidden;
+            }
+
+            .stack-lab__chain {
+              display: flex;
+              align-items: center;
+              min-height: 68px;
+              overflow-x: auto;
+              padding: 0.25rem 0 0.5rem;
+            }
+
+            .stack-lab__node {
+              display: grid;
+              flex: 0 0 66px;
+              width: 66px;
+              height: 60px;
+              place-content: center;
+              border: 3px solid var(--purple);
+              border-radius: 0.9rem;
+              background: #fff;
+              box-shadow: 0 8px 20px rgba(109, 40, 217, 0.13);
+            }
+
+            .stack-lab__node.is-temporary {
+              border-color: var(--green);
+            }
+
+            .stack-lab__node.is-removed {
+              border-color: var(--red);
+              opacity: 0.42;
+              text-decoration: line-through;
+            }
+
+            .stack-lab__node strong {
+              font-size: 1.2rem;
+              text-align: center;
+            }
+
+            .stack-lab__node small {
+              margin-top: 0.2rem;
+              color: var(--muted);
+              font-size: 0.62rem;
+              text-transform: uppercase;
+            }
+
+            .stack-lab__arrow {
+              flex: 0 0 auto;
+              margin: 0 0.4rem;
+              color: #8b5cf6;
+              font-size: 1.25rem;
+            }
+
+            .stack-lab__none {
+              color: var(--muted);
+              font-family: monospace;
+            }
+
+            .stack-lab__code pre {
+              margin: 0;
+              overflow-x: auto;
+              font: 0.8rem/1.55 monospace;
+            }
+
+            .stack-lab__line {
+              display: block;
+              margin-inline: -0.7rem;
+              padding-inline: 0.7rem;
+              border-left: 3px solid transparent;
+              white-space: pre;
+            }
+
+            .stack-lab__line.is-active {
+              border-color: #a78bfa;
+              background: rgba(139, 92, 246, 0.2);
+            }
+
+            .stack-lab__explanation {
+              min-height: 70px;
+              padding: 0.8rem 1.25rem;
+              background: #fafafa;
+            }
+
+            .stack-lab__step {
+              margin-bottom: 0.2rem;
+              color: var(--purple);
+              font-size: 0.75rem;
+              font-weight: 850;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
+            }
+
+            .stack-lab__message {
+              margin: 0;
+              color: #334155;
+              line-height: 1.4;
+            }
+
+            @media (max-width: 760px) {
+              .stack-lab__workspace {
+                grid-template-columns: 1fr;
+              }
+
+              .stack-lab__top {
+                display: block;
+              }
+
+              .stack-lab__size {
+                display: inline-block;
+                margin-top: 1rem;
+              }
+            }
+          </style>
+
+          <div class="stack-lab__top">
+            <div>
+              <h2 id="stack-lab-title">Linked-list stack simulator</h2>
+              <p>
+                Move through each pointer change instead of watching a loop.
+              </p>
+            </div>
+            <div class="stack-lab__size" data-size>Size: 2</div>
+          </div>
+
+          <div class="stack-lab__operations">
+            <button type="button" data-operation="push" aria-pressed="true">
+              Push C
+            </button>
+            <button type="button" data-operation="pop" aria-pressed="false">
+              Pop B
+            </button>
+          </div>
+
+          <div class="stack-lab__workspace">
+            <div class="stack-lab__memory">
+              <div class="stack-lab__label">Memory and references</div>
+              <div class="stack-lab__reference is-hidden" data-temporary></div>
+              <div class="stack-lab__reference" data-head></div>
+              <div class="stack-lab__chain" data-chain></div>
+            </div>
+
+            <div class="stack-lab__code">
+              <div class="stack-lab__label">Active code</div>
+              <pre data-code></pre>
+            </div>
+          </div>
+
+          <div class="stack-lab__explanation" aria-live="polite">
+            <div class="stack-lab__step" data-step></div>
+            <p class="stack-lab__message" data-message></p>
+          </div>
+
+          <div class="stack-lab__controls">
+            <button type="button" data-action="previous">Previous</button>
+            <button type="button" data-action="next">Next</button>
+            <button type="button" data-action="restart">Restart</button>
+          </div>
+
+          <script>
+            (() => {
+              const root = document.currentScript.closest(".stack-lab");
+              const chain = root.querySelector("[data-chain]");
+              const head = root.querySelector("[data-head]");
+              const temporary = root.querySelector("[data-temporary]");
+              const size = root.querySelector("[data-size]");
+              const code = root.querySelector("[data-code]");
+              const step = root.querySelector("[data-step]");
+              const message = root.querySelector("[data-message]");
+              const previous = root.querySelector('[data-action="previous"]');
+              const next = root.querySelector('[data-action="next"]');
+              const operations = [...root.querySelectorAll("[data-operation]")];
+
+              const lessons = {
+                push: {
+                  lines: [
+                    "def push(self, value):",
+                    "    new_node = Node(value)",
+                    "    new_node.next = self.head",
+                    "    self.head = new_node",
+                    "    self.size += 1",
+                  ],
+                  states: [
+                    {
+                      stack: ["B", "A"],
+                      size: 2,
+                      line: 0,
+                      text: "The stack starts with B as the head.",
+                    },
+                    {
+                      stack: ["B", "A"],
+                      temporary: "C",
+                      size: 2,
+                      line: 1,
+                      text: "Create Node C separately. It is not in the stack yet.",
+                    },
+                    {
+                      stack: ["B", "A"],
+                      temporary: "C → B",
+                      size: 2,
+                      line: 2,
+                      text: "Make C.next reference the old head, Node B.",
+                    },
+                    {
+                      stack: ["C", "B", "A"],
+                      size: 2,
+                      line: 3,
+                      text: "Move head to C. C is now the top of the stack.",
+                    },
+                    {
+                      stack: ["C", "B", "A"],
+                      size: 3,
+                      line: 4,
+                      text: "Increase the size. Push C is complete.",
+                    },
+                  ],
+                },
+                pop: {
+                  lines: [
+                    "def pop(self):",
+                    "    popped_node = self.head",
+                    "    self.head = self.head.next",
+                    "    self.size -= 1",
+                    "    return popped_node.value",
+                  ],
+                  states: [
+                    {
+                      stack: ["B", "A"],
+                      size: 2,
+                      line: 0,
+                      text: "The stack starts with B as the head.",
+                    },
+                    {
+                      stack: ["B", "A"],
+                      temporary: "popped_node → B",
+                      size: 2,
+                      line: 1,
+                      text: "Save the current head in popped_node.",
+                    },
+                    {
+                      stack: ["B", "A"],
+                      temporary: "popped_node → B",
+                      removed: "B",
+                      headIndex: 1,
+                      size: 2,
+                      line: 2,
+                      text: "Move head to B.next, which is Node A.",
+                    },
+                    {
+                      stack: ["A"],
+                      temporary: "popped_node → B",
+                      size: 1,
+                      line: 3,
+                      text: "B is no longer in the stack. Decrease the size.",
+                    },
+                    {
+                      stack: ["A"],
+                      temporary: "returned value → B",
+                      size: 1,
+                      line: 4,
+                      text: "Return the saved value B. Pop is complete.",
+                    },
+                  ],
+                },
+              };
+
+              let operation = "push";
+              let index = 0;
+
+              function node(value, removed) {
+                const element = document.createElement("div");
+                element.className = "stack-lab__node";
+                if (removed) element.classList.add("is-removed");
+                element.innerHTML = `<strong>${value}</strong><small>next</small>`;
+                return element;
+              }
+
+              function render() {
+                const lesson = lessons[operation];
+                const state = lesson.states[index];
+                chain.replaceChildren();
+
+                state.stack.forEach((value, position) => {
+                  chain.append(node(value, state.removed === value));
+                  const arrow = document.createElement("span");
+                  arrow.className = "stack-lab__arrow";
+                  arrow.textContent = "→";
+                  chain.append(arrow);
+                  if (position === (state.headIndex ?? 0)) {
+                    head.textContent = `head → ${value}`;
+                  }
+                });
+
+                const none = document.createElement("span");
+                none.className = "stack-lab__none";
+                none.textContent = "None";
+                chain.append(none);
+
+                temporary.textContent =
+                  state.temporary || "temporary reference";
+                temporary.classList.toggle("is-hidden", !state.temporary);
+                size.textContent = `Size: ${state.size}`;
+                step.textContent = `Step ${index + 1} of ${lesson.states.length}`;
+                message.textContent = state.text;
+                code.replaceChildren();
+
+                lesson.lines.forEach((text, lineIndex) => {
+                  const line = document.createElement("span");
+                  line.className = "stack-lab__line";
+                  line.classList.toggle("is-active", lineIndex === state.line);
+                  line.textContent = text;
+                  code.append(line);
+                });
+
+                previous.disabled = index === 0;
+                next.disabled = index === lesson.states.length - 1;
+              }
+
+              operations.forEach((button) => {
+                button.addEventListener("click", () => {
+                  operation = button.dataset.operation;
+                  index = 0;
+                  operations.forEach((item) => {
+                    item.setAttribute("aria-pressed", item === button);
+                  });
+                  render();
+                });
+              });
+
+              previous.addEventListener("click", () => {
+                if (index > 0) index -= 1;
+                render();
+              });
+
+              next.addEventListener("click", () => {
+                if (index < lessons[operation].states.length - 1) index += 1;
+                render();
+              });
+
+              root
+                .querySelector('[data-action="restart"]')
+                .addEventListener("click", () => {
+                  index = 0;
+                  render();
+                });
+
+              render();
+            })();
+          </script>
+        </section>
+        <div class="article-content stack-guide">
+          <section id="push">
+            <p class="stack-section-number">01 — Adding a node</p>
+            <h2>Push</h2>
+
+            <p>
+              Connect the new node to the old head, then make the new node the
+              head.
+            </p>
+
+            <pre><code>def push(self, value):
+    new_node = Node(value)
+
+    if self.head:
+        new_node.next = self.head
+
+    self.head = new_node
+    self.size += 1</code></pre>
+
+            <div class="stack-steps">
+              <div class="stack-step">
+                <h3><span>1</span> Start with A</h3>
+                <p>The first node becomes the head.</p>
+
+                <div class="stack-head">head ↓</div>
+
+                <div class="stack-chain">
+                  <div class="stack-node"><b>A</b><small>next</small></div>
+
+                  <i>→</i>
+                  <span class="stack-none">None</span>
+                </div>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>2</span> Create B</h3>
+
+                <p>
+                  <code>Node("B")</code> creates a separate node whose
+                  <code>next</code> reference is initially <code>None</code>.
+                </p>
+
+                <div class="stack-chain">
+                  <div class="stack-node"><b>B</b><small>next</small></div>
+
+                  <i>→</i>
+                  <span class="stack-none">None</span>
+                </div>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>3</span> Connect B to A</h3>
+
+                <p>
+                  <code>new_node.next = self.head</code> makes B point to A.
+                </p>
+
+                <div class="stack-chain">
+                  <div class="stack-node"><b>B</b><small>next</small></div>
+
+                  <i>→</i>
+
+                  <div class="stack-node"><b>A</b><small>next</small></div>
+
+                  <i>→</i>
+                  <span class="stack-none">None</span>
+                </div>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>4</span> Move the head</h3>
+
+                <p><code>self.head = new_node</code> makes B the new top.</p>
+
+                <div class="stack-head">head ↓</div>
+
+                <div class="stack-chain">
+                  <div class="stack-node"><b>B</b><small>next</small></div>
+
+                  <i>→</i>
+
+                  <div class="stack-node"><b>A</b><small>next</small></div>
+
+                  <i>→</i>
+                  <span class="stack-none">None</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="stack-summary">
+              <strong>Push:</strong>
+              Create a node → connect it to the old top → make it the new top.
+            </div>
+          </section>
+
+          <section id="pop">
+            <p class="stack-section-number">02 — Removing a node</p>
+            <h2>Pop</h2>
+
+            <p>
+              Remember the old head, move the head to the next node, and return
+              the saved value.
+            </p>
+
+            <pre><code>def pop(self):
+    if self.isEmpty():
+        return "Stack is empty"
+
+    popped_node = self.head
+    self.head = self.head.next
+    self.size -= 1
+
+    return popped_node.value</code></pre>
+
+            <div class="stack-steps">
+              <div class="stack-step">
+                <h3><span>1</span> Begin at the top</h3>
+
+                <p>C is the head, so C must be removed first.</p>
+
+                <div class="stack-head">head ↓</div>
+
+                <div class="stack-chain">
+                  <div class="stack-node"><b>C</b><small>next</small></div>
+
+                  <i>→</i>
+
+                  <div class="stack-node"><b>B</b><small>next</small></div>
+
+                  <i>→</i>
+
+                  <div class="stack-node"><b>A</b><small>next</small></div>
+                </div>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>2</span> Remember C</h3>
+
+                <p>
+                  <code>popped_node = self.head</code> saves a reference to C.
+                </p>
+
+                <div class="stack-head">head and popped_node ↓</div>
+
+                <div class="stack-chain">
+                  <div class="stack-node"><b>C</b><small>next</small></div>
+
+                  <i>→</i>
+
+                  <div class="stack-node"><b>B</b><small>next</small></div>
+                </div>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>3</span> Move head to B</h3>
+
+                <p>
+                  <code>self.head = self.head.next</code> makes B the new top.
+                </p>
+
+                <div class="stack-head">head ↓</div>
+
+                <div class="stack-chain">
+                  <div class="stack-node"><b>B</b><small>next</small></div>
+
+                  <i>→</i>
+
+                  <div class="stack-node"><b>A</b><small>next</small></div>
+
+                  <i>→</i>
+                  <span class="stack-none">None</span>
+                </div>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>4</span> Return C</h3>
+
+                <p>
+                  The saved reference still provides access to
+                  <code>popped_node.value</code>.
+                </p>
+
+                <div class="stack-result">
+                  Returned value: <strong>C</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="stack-summary mint">
+              <strong>Pop:</strong>
+              Save the old top → move head forward → return the saved value.
+            </div>
+          </section>
+
+          <section id="reference-map">
+            <p class="stack-section-number">03 — Reference map</p>
+            <h2>What each expression means</h2>
+
+            <div class="stack-table-wrap">
+              <table class="stack-table">
+                <thead>
+                  <tr>
+                    <th>Expression</th>
+                    <th>Meaning</th>
+                    <th>Result</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr>
+                    <td><code>self.head</code></td>
+                    <td>The complete top node</td>
+                    <td>Node C</td>
+                  </tr>
+
+                  <tr>
+                    <td><code>self.head.value</code></td>
+                    <td>The value inside the top node</td>
+                    <td>"C"</td>
+                  </tr>
+
+                  <tr>
+                    <td><code>self.head.next</code></td>
+                    <td>The next complete node</td>
+                    <td>Node B</td>
+                  </tr>
+
+                  <tr>
+                    <td><code>self.head.next.value</code></td>
+                    <td>The value inside the next node</td>
+                    <td>"B"</td>
+                  </tr>
+                   <tr>
+                    <td><code>self.head.next.next</code></td>
+                    <td>The value inside the next node</td>
+                    <td>Node A</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="complete-code">
+            <p class="stack-section-number">04 — Put it together</p>
+            <h2>Complete code</h2>
+
+            <pre><code>class Node:
+    def __init__(self, value):
+        self.value = value
+        self.next = None
+
+
+class Stack:
+    def __init__(self):
+        self.head = None
+        self.size = 0
+
+    def push(self, value):
+        new_node = Node(value)
+
+        if self.head:
+            new_node.next = self.head
+
+        self.head = new_node
+        self.size += 1
+
+    def pop(self):
+        if self.isEmpty():
+            return "Stack is empty"
+
+        popped_node = self.head
+        self.head = self.head.next
+        self.size -= 1
+
+        return popped_node.value
+
+    def peek(self):
+        if self.isEmpty():
+            return "Stack is empty"
+
+        return self.head.value
+
+    def isEmpty(self):
+        return self.size == 0
+
+    def stackSize(self):
+        return self.size
+
+
+my_stack = Stack()
+my_stack.push("A")
+my_stack.push("B")
+my_stack.push("C")
+
+print("Pop:", my_stack.pop())
+print("Peek:", my_stack.peek())
+print("Size:", my_stack.stackSize())</code></pre>
+          </section>
+
+          <div class="callout">
+            <strong>Key idea:</strong>
+            Push changes the head to the new node. Pop changes the head to the
+            next node. Both operations take constant time, O(1).
+          </div>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

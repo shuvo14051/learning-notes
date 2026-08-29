@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Learn how Python properties provide clean attribute syntax with validation, read-only values, setters, and controlled object state."
+    />
+
+    <title>Properties and Encapsulation in Python | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="oop" data-post="properties-and-encapsulation">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Object-Oriented Programming</p>
+
+          <h1>Properties and Encapsulation in Python</h1>
+
+          <p>
+            Keep natural attribute syntax while controlling how object state is
+            read, validated, and modified.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-09-01">September 1, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content stack-guide">
+          <p>
+            Encapsulation becomes practical when an object can protect its own
+            valid state. Python's <code>@property</code> decorator lets a class
+            run logic during attribute access without forcing callers to use
+            awkward getter and setter syntax.
+          </p>
+
+          <section id="uncontrolled-access">
+            <p class="stack-section-number">01 — The problem</p>
+            <h2>Uncontrolled attribute access</h2>
+
+            <pre class="python-code"><code>class Smartphone:
+    def __init__(self, brand, operating_system):
+        self.brand = brand
+        self.operating_system = operating_system
+
+
+iphone = Smartphone("Apple", "iOS 17")</code></pre>
+
+            <p>
+              The object can be changed to a state that makes no sense for the
+              class:
+            </p>
+
+            <pre class="python-code"><code>iphone.operating_system = "Android"
+print(iphone.operating_system)  # Android</code></pre>
+
+            <p>
+              A public attribute is appropriate when unrestricted assignment is
+              acceptable. When the class has rules to preserve, it needs a
+              controlled interface for changing that state.
+            </p>
+
+            <div class="callout">
+              Encapsulation is not about hiding everything. It is about deciding
+              which changes are valid and making those rules part of the class.
+            </div>
+          </section>
+
+          <section id="naming-conventions">
+            <p class="stack-section-number">02 — Signaling intent</p>
+            <h2>Public, non-public, and name-mangled attributes</h2>
+
+            <p>
+              Python uses naming conventions rather than strict access
+              modifiers.
+            </p>
+
+            <div class="stack-table-wrap">
+              <table class="stack-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Meaning</th>
+                    <th>Enforced?</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>height</code></td>
+                    <td>Public interface</td>
+                    <td>No restriction</td>
+                  </tr>
+                  <tr>
+                    <td><code>_height</code></td>
+                    <td>Non-public implementation detail</td>
+                    <td>Convention only</td>
+                  </tr>
+                  <tr>
+                    <td><code>__height</code></td>
+                    <td>Name-mangled within its class</td>
+                    <td>Reduces accidental access and subclass collision</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p>
+              A single underscore asks callers not to depend on an internal
+              attribute. A double underscore triggers name mangling, but the
+              value is still technically accessible through its mangled name.
+              Neither form validates new values by itself.
+            </p>
+
+            <pre class="python-code"><code>class Tree:
+    def __init__(self, height):
+        self._height = height
+
+
+pine = Tree(20)
+pine._height = "Grandma"  # Still allowed by Python</code></pre>
+
+            <p>
+              To enforce a rule, the class needs behavior—not only a naming
+              convention.
+            </p>
+          </section>
+
+          <section id="getters-setters">
+            <p class="stack-section-number">03 — Traditional control</p>
+            <h2>Getter and setter methods</h2>
+
+            <p>
+              One approach is to make the internal value non-public and expose
+              explicit methods for reading and updating it.
+            </p>
+
+            <pre class="python-code"><code>class Tree:
+    def __init__(self, height):
+        self.set_height(height)
+
+    def get_height(self):
+        return self._height
+
+    def set_height(self, new_height):
+        if isinstance(new_height, bool) or not isinstance(new_height, int):
+            raise TypeError("height must be an integer")
+
+        if not 0 &lt; new_height &lt;= 40:
+            raise ValueError("height must be between 1 and 40")
+
+        self._height = new_height</code></pre>
+
+            <p>
+              The constructor calls the setter so the initial value follows the
+              same rules as every later value.
+            </p>
+
+            <pre class="python-code"><code>pine = Tree(20)
+pine.set_height(25)
+
+print(pine.get_height())  # 25</code></pre>
+
+            <p>
+              This works, but manipulating the value feels heavier than normal
+              Python attribute access:
+            </p>
+
+            <pre class="python-code"><code>pine.set_height(pine.get_height() + 5)</code></pre>
+          </section>
+
+          <section id="property-getter">
+            <p class="stack-section-number">04 — Property getter</p>
+            <h2>Access behavior with attribute syntax</h2>
+
+            <p>
+              The <code>@property</code> decorator turns a method into a managed
+              attribute. Callers use attribute syntax, while the class still
+              runs a function.
+            </p>
+
+            <pre class="python-code"><code>class Tree:
+    def __init__(self, height):
+        self._height = height
+
+    @property
+    def height(self):
+        return self._height
+
+
+pine = Tree(17)
+print(pine.height)  # 17</code></pre>
+
+            <p>
+              The caller writes <code>pine.height</code>, not
+              <code>pine.height()</code>. Behind that expression, the property
+              getter returns <code>pine._height</code>.
+            </p>
+
+            <h3>A getter-only property is read-only</h3>
+
+            <pre class="python-code"><code>pine.height = 25
+# AttributeError: property 'height' of 'Tree' object has no setter</code></pre>
+
+            <p>
+              The public name cannot be assigned until the property defines a
+              setter. This is useful for values callers should inspect but not
+              replace directly.
+            </p>
+          </section>
+
+          <section id="property-setter">
+            <p class="stack-section-number">05 — Property setter</p>
+            <h2>Validate assignment automatically</h2>
+
+            <pre class="python-code"><code>class Tree:
+    def __init__(self, height):
+        self.height = height
+
+    @property
+    def height(self):
+        return self._height
+
+    @height.setter
+    def height(self, new_height):
+        if isinstance(new_height, bool) or not isinstance(new_height, int):
+            raise TypeError("height must be an integer")
+
+        if not 0 &lt; new_height &lt;= 40:
+            raise ValueError("height must be between 1 and 40")
+
+        self._height = new_height</code></pre>
+
+            <p>
+              The public property is <code>height</code>. The actual value is
+              stored under <code>_height</code>. Using different names prevents
+              the setter from assigning to itself recursively.
+            </p>
+
+            <pre class="python-code"><code>pine = Tree(10)
+pine.height = 33
+
+print(pine.height)  # 33</code></pre>
+
+            <p>Invalid values are rejected consistently:</p>
+
+            <pre class="python-code"><code>Tree("tall")   # TypeError
+Tree(100)      # ValueError
+
+pine.height = -5  # ValueError</code></pre>
+
+            <div class="callout">
+              Assigning <code>self.height = height</code> in
+              <code>__init__</code> deliberately invokes the property setter.
+              Construction cannot bypass the validation.
+            </div>
+          </section>
+
+          <section id="descriptor-behavior">
+            <p class="stack-section-number">06 — Under the hood</p>
+            <h2>A property is a data descriptor</h2>
+
+            <p>
+              A property is stored on the class and participates in attribute
+              lookup through the descriptor protocol.
+            </p>
+
+            <pre class="python-code"><code>print(Tree.__dict__["height"])
+# &lt;property object at 0x...&gt;</code></pre>
+
+            <p>
+              Because a property is a data descriptor, it takes priority over an
+              instance dictionary entry with the same public name. Reads and
+              assignments are routed through its getter and setter.
+            </p>
+
+            <p>
+              The backing attribute uses another name—here,
+              <code>_height</code>—so the property can store the actual state
+              without triggering itself again.
+            </p>
+          </section>
+
+          <section id="computed-property">
+            <p class="stack-section-number">07 — Computed values</p>
+            <h2>A property does not need stored data</h2>
+
+            <p>
+              Properties can compute a value from other state instead of
+              exposing a stored attribute.
+            </p>
+
+            <pre class="python-code"><code>class Rectangle:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
+    @property
+    def area(self):
+        return self.width * self.height
+
+
+rectangle = Rectangle(4, 6)
+
+print(rectangle.area)  # 24
+
+rectangle.width = 10
+print(rectangle.area)  # 60</code></pre>
+
+            <p>
+              There is no stored <code>area</code> value to become stale. Each
+              access calculates it from the current dimensions.
+            </p>
+          </section>
+
+          <section id="evolving-api">
+            <p class="stack-section-number">08 — API evolution</p>
+            <h2>Add control without changing caller syntax</h2>
+
+            <p>
+              A class can begin with a simple public attribute:
+            </p>
+
+            <pre class="python-code"><code>class Product:
+    def __init__(self, price):
+        self.price = price</code></pre>
+
+            <p>
+              If validation becomes necessary later, the class can replace that
+              attribute with a property while callers continue using
+              <code>product.price</code> and <code>product.price = value</code>.
+            </p>
+
+            <div class="callout">
+              You do not need getters and setters for every attribute from day
+              one. Start simple and introduce a property when access needs
+              behavior.
+            </div>
+          </section>
+
+          <section id="complete-code">
+            <p class="stack-section-number">09 — Put it together</p>
+            <h2>Complete example</h2>
+
+            <pre class="python-code"><code>class Tree:
+    def __init__(self, species, height):
+        self.species = species
+        self.height = height
+
+    @property
+    def height(self):
+        return self._height
+
+    @height.setter
+    def height(self, new_height):
+        if isinstance(new_height, bool) or not isinstance(new_height, int):
+            raise TypeError("height must be an integer")
+
+        if not 0 &lt; new_height &lt;= 40:
+            raise ValueError("height must be between 1 and 40")
+
+        self._height = new_height
+
+    @property
+    def description(self):
+        return f"{self.species}: {self.height} meters"
+
+
+pine = Tree("Pine", 20)
+print(pine.description)
+
+pine.height = 25
+print(pine.description)</code></pre>
+
+            <pre><code>Pine: 20 meters
+Pine: 25 meters</code></pre>
+          </section>
+
+          <section id="summary">
+            <p class="stack-section-number">10 — Summary</p>
+            <h2>Key takeaways</h2>
+
+            <ul>
+              <li>Public attributes are appropriate when unrestricted access is safe.</li>
+              <li>Underscores communicate internal intent but do not enforce validation.</li>
+              <li>A getter-only property creates a read-only public attribute.</li>
+              <li>A property setter validates normal assignment syntax.</li>
+              <li>Constructor values should follow the same validation path.</li>
+              <li>Properties can also expose computed values.</li>
+            </ul>
+
+            <div class="callout">
+              <strong>Final idea:</strong> A property preserves clean attribute
+              syntax while giving the class control over how its state is read
+              and changed.
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

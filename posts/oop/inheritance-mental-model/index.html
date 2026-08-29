@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Build a clear mental model of Python inheritance, attribute lookup, overriding, multilevel hierarchies, and the method resolution order."
+    />
+
+    <title>Understanding Python Inheritance | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="oop" data-post="inheritance-mental-model">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Object-Oriented Programming</p>
+
+          <h1>Understanding Python Inheritance</h1>
+
+          <p>
+            Build the mental model behind parent classes, specialized child
+            classes, attribute lookup, method overriding, and the MRO.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-09-03">September 3, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content stack-guide">
+          <p>
+            Inheritance lets a class reuse and specialize behavior from another
+            class. Once you understand that Python searches a class hierarchy
+            rather than copying everything into each child, inheritance becomes
+            predictable.
+          </p>
+
+          <p>
+            This foundation prepares you for method overriding,
+            <code>super()</code>, abstract base classes, and multiple
+            inheritance.
+          </p>
+
+          <section id="is-a">
+            <p class="stack-section-number">01 — Relationship</p>
+            <h2>The core idea: an “is-a” relationship</h2>
+
+            <p>
+              Inheritance commonly represents specialization. A child class is
+              a more specific form of its parent class.
+            </p>
+
+            <pre><code>Animal
+  ↓
+ Dog
+  ↓
+Puppy</code></pre>
+
+            <p>This hierarchy says:</p>
+
+            <ul>
+              <li>a <code>Dog</code> is an <code>Animal</code></li>
+              <li>a <code>Puppy</code> is a <code>Dog</code></li>
+              <li>therefore, a <code>Puppy</code> is also an <code>Animal</code></li>
+            </ul>
+
+            <p>
+              Each level can add more specialized behavior while retaining
+              access to behavior defined higher in the hierarchy.
+            </p>
+
+            <pre><code>Animal: eat(), sleep()
+   ↓
+Dog:    bark()
+   ↓
+Puppy:  play()</code></pre>
+
+            <p>
+              A <code>Puppy</code> can use <code>eat()</code>,
+              <code>sleep()</code>, <code>bark()</code>, and
+              <code>play()</code> because attribute lookup can continue through
+              its ancestor classes.
+            </p>
+
+            <div class="callout">
+              Use inheritance when the child can genuinely stand in for the
+              parent. If the relationship is only “has-a” or “uses-a,”
+              composition may be a better design.
+            </div>
+          </section>
+
+          <section id="define-child">
+            <p class="stack-section-number">02 — Syntax</p>
+            <h2>Define a child class</h2>
+
+            <p>Place the parent class inside parentheses:</p>
+
+            <pre class="python-code"><code>class Animal:
+    def eat(self):
+        return "eating"
+
+
+class Dog(Animal):
+    def bark(self):
+        return "barking"
+
+
+dog = Dog()
+
+print(dog.eat())
+print(dog.bark())</code></pre>
+
+            <pre><code>eating
+barking</code></pre>
+
+            <p>
+              <code>Dog</code> defines <code>bark</code> itself. It does not define
+              <code>eat</code>, so Python finds <code>eat</code> through
+              <code>Animal</code>.
+            </p>
+          </section>
+
+          <section id="inherited-members">
+            <p class="stack-section-number">03 — Reused definitions</p>
+            <h2>What a child class can access</h2>
+
+            <p>A child class can normally use definitions from its ancestors:</p>
+
+            <ul>
+              <li>ordinary methods</li>
+              <li>class attributes</li>
+              <li>properties and other descriptors</li>
+              <li>class methods</li>
+              <li>static methods</li>
+            </ul>
+
+            <pre class="python-code"><code>class Animal:
+    species = "animal"
+
+    def eat(self):
+        return "eating"
+
+    @property
+    def status(self):
+        return "awake"
+
+    @classmethod
+    def category(cls):
+        return "living thing"
+
+    @staticmethod
+    def has_cells():
+        return True
+
+
+class Dog(Animal):
+    pass
+
+
+dog = Dog()
+
+print(dog.eat())
+print(dog.status)
+print(Dog.species)
+print(Dog.category())
+print(Dog.has_cells())</code></pre>
+
+            <p>
+              These definitions are not copied into <code>Dog.__dict__</code>.
+              Python finds them by searching the class hierarchy.
+            </p>
+
+            <pre class="python-code"><code>print("eat" in Dog.__dict__)     # False
+print("eat" in Animal.__dict__)  # True</code></pre>
+
+            <div class="callout">
+              “Inherited” usually means “available through lookup,” not
+              “duplicated inside the child class.”
+            </div>
+          </section>
+
+          <section id="lookup-chain">
+            <p class="stack-section-number">04 — Lookup</p>
+            <h2>The attribute lookup chain</h2>
+
+            <p>Consider an ordinary attribute access:</p>
+
+            <pre class="python-code"><code>dog.sound</code></pre>
+
+            <p>A useful simplified path is:</p>
+
+            <pre><code>dog instance
+     ↓
+Dog class
+     ↓
+Animal class
+     ↓
+object</code></pre>
+
+            <p>
+              Python first accounts for descriptor priority, then instance
+              storage, and then searches the class hierarchy according to the
+              method resolution order. The search stops when the applicable
+              attribute is found.
+            </p>
+
+            <pre class="python-code"><code>class Animal:
+    sound = "some sound"
+
+
+class Dog(Animal):
+    pass
+
+
+dog = Dog()
+print(dog.sound)  # some sound</code></pre>
+
+            <p>For this simple class attribute, Python checks:</p>
+
+            <ol>
+              <li><code>dog</code> has no instance attribute named <code>sound</code>.</li>
+              <li><code>Dog</code> does not define <code>sound</code>.</li>
+              <li><code>Animal</code> defines it, so lookup returns that value.</li>
+            </ol>
+          </section>
+
+          <section id="override-attributes">
+            <p class="stack-section-number">05 — Specialization</p>
+            <h2>A child can override a parent definition</h2>
+
+            <p>
+              If a child class defines the same name as its parent, lookup finds
+              the child's definition first.
+            </p>
+
+            <pre class="python-code"><code>class Animal:
+    def speak(self):
+        return "generic sound"
+
+
+class Dog(Animal):
+    def speak(self):
+        return "bark"
+
+
+print(Dog().speak())  # bark</code></pre>
+
+            <p>
+              This is method overriding. The parent method still exists on
+              <code>Animal</code>; the child method is simply selected first for
+              a <code>Dog</code> object.
+            </p>
+
+            <h3>Class attributes can also be overridden</h3>
+
+            <pre class="python-code"><code>class Animal:
+    sound = "generic sound"
+
+
+class Dog(Animal):
+    sound = "bark"
+
+
+print(Animal.sound)  # generic sound
+print(Dog.sound)     # bark</code></pre>
+
+            <div class="callout">
+              Overriding changes which definition lookup selects for the child.
+              It does not erase or modify the parent's definition.
+            </div>
+          </section>
+
+          <section id="multilevel">
+            <p class="stack-section-number">06 — Multiple levels</p>
+            <h2>A three-level hierarchy</h2>
+
+            <pre class="python-code"><code>class Animal:
+    def eat(self):
+        return "animal eating"
+
+
+class Dog(Animal):
+    def bark(self):
+        return "dog barking"
+
+
+class Puppy(Dog):
+    def play(self):
+        return "puppy playing"
+
+
+puppy = Puppy()
+
+print(puppy.eat())
+print(puppy.bark())
+print(puppy.play())</code></pre>
+
+            <pre><code>animal eating
+dog barking
+puppy playing</code></pre>
+
+            <p>For class-level definitions, the search path is:</p>
+
+            <pre><code>Puppy → Dog → Animal → object</code></pre>
+
+            <p>
+              <code>play</code> is found on <code>Puppy</code>, <code>bark</code> on
+              <code>Dog</code>, and <code>eat</code> on <code>Animal</code>.
+            </p>
+          </section>
+
+          <section id="constructors">
+            <p class="stack-section-number">07 — Initialization</p>
+            <h2>Constructor lookup follows the same hierarchy</h2>
+
+            <p>
+              <code>__init__</code> is also found through normal method lookup. A
+              child without its own <code>__init__</code> can use the parent's.
+            </p>
+
+            <pre class="python-code"><code>class Animal:
+    def __init__(self, name):
+        self.name = name
+
+
+class Dog(Animal):
+    pass
+
+
+dog = Dog("Fido")
+print(dog.name)  # Fido</code></pre>
+
+            <p>
+              If <code>Dog</code> defines its own <code>__init__</code>, that method
+              overrides the inherited initializer. The child can cooperate with
+              the parent using <code>super()</code>, which is the subject of the
+              next inheritance step.
+            </p>
+          </section>
+
+          <section id="mro">
+            <p class="stack-section-number">08 — Inspection</p>
+            <h2>Inspect the method resolution order</h2>
+
+            <p>
+              Every class exposes the exact class search order through
+              <code>__mro__</code> and <code>mro()</code>.
+            </p>
+
+            <pre class="python-code"><code>print(Puppy.__mro__)
+print(Puppy.mro())</code></pre>
+
+            <pre><code>(&lt;class '__main__.Puppy'&gt;,
+ &lt;class '__main__.Dog'&gt;,
+ &lt;class '__main__.Animal'&gt;,
+ &lt;class 'object'&gt;)</code></pre>
+
+            <p>
+              The <strong>method resolution order</strong> is not limited to
+              methods. It is the order used to search the class hierarchy for
+              attributes generally.
+            </p>
+
+            <div class="callout">
+              Reading <code>ClassName.__mro__</code> is often the fastest way to
+              understand which definition Python will find in an inheritance
+              hierarchy.
+            </div>
+          </section>
+
+          <section id="relationship-checks">
+            <p class="stack-section-number">09 — Relationship checks</p>
+            <h2>Use <code>isinstance()</code> and <code>issubclass()</code></h2>
+
+            <pre class="python-code"><code>puppy = Puppy()
+
+print(isinstance(puppy, Puppy))   # True
+print(isinstance(puppy, Dog))     # True
+print(isinstance(puppy, Animal))  # True
+
+print(issubclass(Puppy, Dog))     # True
+print(issubclass(Puppy, Animal))  # True
+print(issubclass(Dog, Puppy))     # False</code></pre>
+
+            <p>
+              These checks account for inheritance. Comparing
+              <code>type(puppy) is Animal</code> would be false because the exact
+              type is <code>Puppy</code>, even though the object is also an
+              instance of every ancestor in the hierarchy.
+            </p>
+          </section>
+
+          <section id="summary">
+            <p class="stack-section-number">10 — Summary</p>
+            <h2>The inheritance mental model</h2>
+
+            <ul>
+              <li>Inheritance models a specialization or “is-a” relationship.</li>
+              <li>Ancestor definitions are reused through attribute lookup.</li>
+              <li>A child can add new behavior or override an inherited name.</li>
+              <li>Overriding does not modify the parent's definition.</li>
+              <li>The MRO defines the class-hierarchy search order.</li>
+              <li><code>isinstance()</code> and <code>issubclass()</code> understand the hierarchy.</li>
+            </ul>
+
+            <div class="callout">
+              <strong>Final idea:</strong> A child class does not receive a copy
+              of everything above it. Python follows the MRO and reuses the first
+              applicable definition it finds.
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

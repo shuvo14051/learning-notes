@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Understand encapsulation in Python through public attributes, underscore conventions, name mangling, inheritance, and properties."
+    />
+
+    <title>Encapsulation in Python: The Real Story | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="oop" data-post="encapsulation">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Object-Oriented Programming</p>
+
+          <h1>Encapsulation in Python: The Real Story</h1>
+
+          <p>
+            Learn how Python communicates public and internal interfaces, what
+            name mangling actually does, and how objects protect valid state.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-08-31">August 31, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content stack-guide">
+          <p>
+            Encapsulation is a core object-oriented design idea, but Python does
+            not express it with the strict access modifiers found in languages
+            such as Java or C++. Python relies more heavily on interfaces,
+            naming conventions, and cooperation between developers.
+          </p>
+
+          <section id="meaning">
+            <p class="stack-section-number">01 — The principle</p>
+            <h2>What encapsulation really means</h2>
+
+            <p>
+              Encapsulation bundles related data and behavior inside an object
+              and exposes a deliberate interface for working with that state.
+              Its purpose is not merely to hide variables.
+            </p>
+
+            <p>Good encapsulation helps you:</p>
+
+            <ul>
+              <li>protect an object's valid state</li>
+              <li>prevent accidental misuse</li>
+              <li>define a small, understandable public interface</li>
+              <li>change internal implementation without breaking callers</li>
+            </ul>
+
+            <div class="callout">
+              <strong>Core idea:</strong> Callers should depend on what an object
+              promises to do, not on every detail of how it does it.
+            </div>
+          </section>
+
+          <section id="python-approach">
+            <p class="stack-section-number">02 — Python's approach</p>
+            <h2>Convention instead of strict access control</h2>
+
+            <p>
+              Python has no Java-style <code>public</code>,
+              <code>protected</code>, or <code>private</code> keywords for normal
+              attributes. Most state remains technically accessible.
+            </p>
+
+            <p>
+              Instead, attribute names communicate how callers are expected to
+              use them:
+            </p>
+
+            <div class="stack-table-wrap">
+              <table class="stack-table">
+                <thead>
+                  <tr>
+                    <th>Form</th>
+                    <th>Common description</th>
+                    <th>Actual behavior</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>name</code></td>
+                    <td>Public</td>
+                    <td>Part of the normal external interface</td>
+                  </tr>
+                  <tr>
+                    <td><code>_name</code></td>
+                    <td>Protected or non-public</td>
+                    <td>Convention: internal use, but still accessible</td>
+                  </tr>
+                  <tr>
+                    <td><code>__name</code></td>
+                    <td>Private</td>
+                    <td>Name-mangled to reduce accidental subclass collisions</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p>
+              The words “protected” and “private” are convenient shorthand, but
+              they do not represent enforced visibility levels in Python.
+            </p>
+          </section>
+
+          <section id="public">
+            <p class="stack-section-number">03 — Public attributes</p>
+            <h2>No leading underscore</h2>
+
+            <p>
+              A public attribute has no leading underscore and is intended for
+              ordinary use by callers.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    def __init__(self, name):
+        self.name = name
+
+
+person = Person("Alice")
+print(person.name)  # Alice
+
+person.name = "Sara"
+print(person.name)  # Sara</code></pre>
+
+            <p>
+              Direct reading and assignment are part of this class's public
+              interface. Public attributes are often perfectly appropriate when
+              no validation or additional behavior is required.
+            </p>
+          </section>
+
+          <section id="single-underscore">
+            <p class="stack-section-number">04 — Non-public attributes</p>
+            <h2>A single leading underscore</h2>
+
+            <p>
+              A single leading underscore signals that an attribute is an
+              internal implementation detail.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    def __init__(self, name):
+        self._name = name
+
+
+person = Person("Alice")
+print(person._name)  # Alice</code></pre>
+
+            <p>
+              The access works because Python does not block it. The underscore
+              asks callers not to depend on this name unless they have a good
+              reason and accept that it may change.
+            </p>
+
+            <p>
+              This convention also affects wildcard imports: a name beginning
+              with one underscore is normally excluded from
+              <code>from module import *</code> unless the module explicitly
+              includes it in <code>__all__</code>.
+            </p>
+
+            <div class="callout">
+              A single underscore communicates intent to people and tools. It is
+              not an access-control barrier.
+            </div>
+          </section>
+
+          <section id="double-underscore">
+            <p class="stack-section-number">05 — Name mangling</p>
+            <h2>A double leading underscore</h2>
+
+            <p>
+              A name beginning with two underscores and not ending with two
+              underscores triggers name mangling inside a class definition.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    def __init__(self, name):
+        self.__name = name
+
+
+person = Person("Alice")
+print(person.__dict__)</code></pre>
+
+            <pre><code>{'_Person__name': 'Alice'}</code></pre>
+
+            <p>
+              Python rewrites <code>__name</code> using the class name. Therefore,
+              this direct access fails:
+            </p>
+
+            <pre class="python-code"><code>print(person.__name)
+# AttributeError: 'Person' object has no attribute '__name'</code></pre>
+
+            <p>The mangled name remains accessible:</p>
+
+            <pre class="python-code"><code>print(person._Person__name)  # Alice</code></pre>
+
+            <div class="callout">
+              Name mangling is not secrecy or security. It makes accidental name
+              collisions less likely, especially in subclasses.
+            </div>
+          </section>
+
+          <section id="inheritance">
+            <p class="stack-section-number">06 — Inheritance safety</p>
+            <h2>Why name mangling matters in subclasses</h2>
+
+            <pre class="python-code"><code>class A:
+    def __init__(self):
+        self.__value = 10
+
+    def value_from_a(self):
+        return self.__value
+
+
+class B(A):
+    def __init__(self):
+        super().__init__()
+        self.__value = 20
+
+    def value_from_b(self):
+        return self.__value
+
+
+item = B()
+
+print(item.__dict__)
+print(item.value_from_a())
+print(item.value_from_b())</code></pre>
+
+            <pre><code>{'_A__value': 10, '_B__value': 20}
+10
+20</code></pre>
+
+            <p>
+              Code written inside <code>A</code> transforms
+              <code>self.__value</code> into <code>self._A__value</code>. Code
+              inside <code>B</code> transforms the same spelling into
+              <code>self._B__value</code>. The two attributes do not collide.
+            </p>
+
+            <h3>Without name mangling</h3>
+
+            <pre class="python-code"><code>class A:
+    def __init__(self):
+        self._value = 10
+
+
+class B(A):
+    def __init__(self):
+        super().__init__()
+        self._value = 20
+
+
+item = B()
+print(item._value)  # 20
+print(item.__dict__) # {'_value': 20}</code></pre>
+
+            <p>
+              Both assignments use the same attribute. The subclass replaces
+              the value initialized by the parent. That may be intentional, but
+              it can also break a base class that expects its internal name to
+              remain under its control.
+            </p>
+
+            <p>Name mangling is primarily useful for:</p>
+
+            <ul>
+              <li>avoiding accidental subclass overrides</li>
+              <li>protecting a base class's internal implementation namespace</li>
+              <li>reducing collisions in inheritance hierarchies</li>
+            </ul>
+          </section>
+
+          <section id="properties">
+            <p class="stack-section-number">07 — Controlled access</p>
+            <h2>Use properties to protect valid state</h2>
+
+            <p>
+              Naming conventions communicate intent. A property goes further by
+              defining behavior for reading or assigning an attribute while
+              keeping a natural public interface.
+            </p>
+
+            <pre class="python-code"><code>class BankAccount:
+    def __init__(self, balance=0):
+        self._balance = balance
+
+    @property
+    def balance(self):
+        return self._balance
+
+    def deposit(self, amount):
+        if amount &lt;= 0:
+            raise ValueError("deposit must be positive")
+
+        self._balance += amount
+
+    def withdraw(self, amount):
+        if amount &lt;= 0:
+            raise ValueError("withdrawal must be positive")
+
+        if amount &gt; self._balance:
+            raise ValueError("insufficient funds")
+
+        self._balance -= amount
+
+
+account = BankAccount(100)
+account.deposit(50)
+account.withdraw(30)
+
+print(account.balance)  # 120</code></pre>
+
+            <p>
+              Callers can inspect <code>balance</code> but must use methods that
+              enforce the account's rules to change it. The important protection
+              comes from the designed interface, not merely from the underscore.
+            </p>
+
+            <div class="callout">
+              Encapsulation is strongest when behavior preserves invariants. An
+              underscore alone cannot keep an object valid.
+            </div>
+          </section>
+
+          <section id="guidelines">
+            <p class="stack-section-number">08 — Practical choices</p>
+            <h2>Which naming style should you use?</h2>
+
+            <ul>
+              <li>
+                Use <code>name</code> when callers are expected to depend on the
+                attribute.
+              </li>
+              <li>
+                Use <code>_name</code> for an implementation detail that callers
+                should generally leave alone.
+              </li>
+              <li>
+                Use <code>__name</code> when avoiding accidental subclass name
+                collisions is genuinely valuable.
+              </li>
+              <li>
+                Use a property or method when access needs validation,
+                computation, or other behavior.
+              </li>
+            </ul>
+
+            <p>
+              Do not add getters and setters automatically to every attribute.
+              Python allows simple public attributes, and you can later replace
+              one with a property without changing the caller's attribute syntax.
+            </p>
+          </section>
+
+          <section id="summary">
+            <p class="stack-section-number">09 — Summary</p>
+            <h2>The real story</h2>
+
+            <ul>
+              <li>Python does not enforce traditional visibility modifiers.</li>
+              <li>A public name forms part of the supported interface.</li>
+              <li>A single underscore marks a name as non-public by convention.</li>
+              <li>A double underscore triggers class-based name mangling.</li>
+              <li>Name mangling prevents collisions, not determined access.</li>
+              <li>Properties and methods can enforce rules around object state.</li>
+            </ul>
+
+            <div class="callout">
+              <strong>Final idea:</strong> Encapsulation is the design of a clear
+              interface that keeps an object valid while allowing its internal
+              implementation to evolve.
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

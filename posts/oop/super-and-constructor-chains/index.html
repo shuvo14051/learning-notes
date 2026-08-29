@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Understand Python super(), constructor chains, argument forwarding, the MRO, and cooperative initialization."
+    />
+
+    <title>super() and Constructor Chains in Python | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="oop" data-post="super-and-constructor-chains">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Object-Oriented Programming</p>
+
+          <h1><code>super()</code> and Constructor Chains in Python</h1>
+
+          <p>
+            Follow object initialization through a hierarchy and learn how
+            cooperative methods pass control and arguments along the MRO.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-09-05">September 5, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content stack-guide">
+          <p>
+            After inheritance and method overriding, the next step is
+            understanding how several classes cooperate to build one object.
+            Each class can initialize the state it owns and use
+            <code>super()</code> to continue the initialization chain.
+          </p>
+
+          <div class="callout">
+            <code>super()</code> does not simply mean “my parent.” It creates a
+            proxy that continues method lookup after the current class in the
+            method resolution order.
+          </div>
+
+          <section id="constructor-chain">
+            <p class="stack-section-number">01 — Layered initialization</p>
+            <h2>Connect constructors with <code>super()</code></h2>
+
+            <p>Consider this three-level hierarchy:</p>
+
+            <pre><code>Vehicle → Car → ElectricCar</code></pre>
+
+            <pre class="python-code"><code>class Vehicle:
+    def __init__(self, brand):
+        self.brand = brand
+
+    def describe(self):
+        return f"Vehicle brand: {self.brand}"
+
+
+class Car(Vehicle):
+    def __init__(self, brand, doors):
+        super().__init__(brand)
+        self.doors = doors
+
+    def describe(self):
+        return f"{super().describe()}, doors: {self.doors}"
+
+
+class ElectricCar(Car):
+    def __init__(self, brand, doors, battery):
+        super().__init__(brand, doors)
+        self.battery = battery
+
+    def describe(self):
+        return f"{super().describe()}, battery: {self.battery}"
+
+
+car = ElectricCar("Tesla", 4, "100 kWh")
+
+print(car.brand)
+print(car.doors)
+print(car.battery)
+print(car.describe())</code></pre>
+
+            <pre><code>Tesla
+4
+100 kWh
+Vehicle brand: Tesla, doors: 4, battery: 100 kWh</code></pre>
+
+            <p>Each class initializes the state it is responsible for:</p>
+
+            <ul>
+              <li><code>Vehicle</code> initializes <code>brand</code>.</li>
+              <li><code>Car</code> adds <code>doors</code>.</li>
+              <li><code>ElectricCar</code> adds <code>battery</code>.</li>
+            </ul>
+
+            <p>
+              There is only one <code>ElectricCar</code> object. Each constructor
+              receives the same instance as <code>self</code> and adds state to it.
+            </p>
+          </section>
+
+          <section id="execution-flow">
+            <p class="stack-section-number">02 — Call stack</p>
+            <h2>Follow the exact constructor flow</h2>
+
+            <pre class="python-code"><code>class Vehicle:
+    def __init__(self):
+        print("Vehicle constructor")
+
+
+class Car(Vehicle):
+    def __init__(self):
+        print("Car constructor start")
+        super().__init__()
+        print("Car constructor end")
+
+
+class ElectricCar(Car):
+    def __init__(self):
+        print("ElectricCar constructor start")
+        super().__init__()
+        print("ElectricCar constructor end")
+
+
+ElectricCar()</code></pre>
+
+            <pre><code>ElectricCar constructor start
+Car constructor start
+Vehicle constructor
+Car constructor end
+ElectricCar constructor end</code></pre>
+
+            <p>The calls move down the MRO:</p>
+
+            <pre><code>ElectricCar.__init__()
+          ↓
+     Car.__init__()
+          ↓
+   Vehicle.__init__()</code></pre>
+
+            <p>
+              When the final called method returns, suspended execution resumes
+              in reverse order—first inside <code>Car</code>, then inside
+              <code>ElectricCar</code>.
+            </p>
+          </section>
+
+          <section id="missing-super">
+            <p class="stack-section-number">03 — Broken chain</p>
+            <h2>What happens when <code>super()</code> is omitted?</h2>
+
+            <pre class="python-code"><code>class Vehicle:
+    def __init__(self):
+        self.brand = "Unknown"
+
+
+class Car(Vehicle):
+    def __init__(self):
+        self.doors = 4
+
+
+car = Car()
+
+print(car.doors)  # 4
+print(car.brand)  # AttributeError</code></pre>
+
+            <p>
+              <code>Car.__init__</code> overrides the inherited initializer. It
+              never continues to <code>Vehicle.__init__</code>, so
+              <code>brand</code> is never assigned.
+            </p>
+
+            <div class="callout">
+              Python does not automatically run every constructor in the
+              hierarchy. Cooperative classes must explicitly continue the chain.
+            </div>
+          </section>
+
+          <section id="direct-call">
+            <p class="stack-section-number">04 — Direct parent calls</p>
+            <h2>Why not call the parent class by name?</h2>
+
+            <pre class="python-code"><code>class Car(Vehicle):
+    def __init__(self, brand, doors):
+        Vehicle.__init__(self, brand)
+        self.doors = doors</code></pre>
+
+            <p>
+              This can work in a simple hierarchy, but it hard-codes
+              <code>Vehicle</code>. It bypasses cooperative MRO behavior and can
+              call a class twice—or skip another class—when multiple inheritance
+              is introduced.
+            </p>
+
+            <pre class="python-code"><code>class Car(Vehicle):
+    def __init__(self, brand, doors):
+        super().__init__(brand)
+        self.doors = doors</code></pre>
+
+            <p>
+              The <code>super()</code> version asks Python to select the next
+              applicable implementation according to the current class and the
+              actual object's MRO.
+            </p>
+          </section>
+
+          <section id="passing-arguments">
+            <p class="stack-section-number">05 — Argument flow</p>
+            <h2>Pass arguments through the chain</h2>
+
+            <pre class="python-code"><code>class Person:
+    def __init__(self, name):
+        self.name = name
+
+
+class Employee(Person):
+    def __init__(self, name, salary):
+        super().__init__(name)
+        self.salary = salary
+
+
+class Manager(Employee):
+    def __init__(self, name, salary, department):
+        super().__init__(name, salary)
+        self.department = department
+
+
+manager = Manager("Alice", 90_000, "Engineering")
+
+print(manager.name)
+print(manager.salary)
+print(manager.department)</code></pre>
+
+            <pre><code>Alice
+90000
+Engineering</code></pre>
+
+            <p>
+              Each constructor accepts the information needed at its level and
+              forwards the remaining parent arguments in the expected form.
+            </p>
+
+            <pre><code>Manager instance
+├── name        ← Person
+├── salary      ← Employee
+└── department  ← Manager</code></pre>
+          </section>
+
+          <section id="mro">
+            <p class="stack-section-number">06 — Resolution order</p>
+            <h2>The MRO controls <code>super()</code></h2>
+
+            <pre class="python-code"><code>class A:
+    pass
+
+
+class B(A):
+    pass
+
+
+class C(B):
+    pass
+
+
+print(C.__mro__)</code></pre>
+
+            <pre><code>(&lt;class '__main__.C'&gt;,
+ &lt;class '__main__.B'&gt;,
+ &lt;class '__main__.A'&gt;,
+ &lt;class 'object'&gt;)</code></pre>
+
+            <p>The class lookup order is:</p>
+
+            <pre><code>C → B → A → object</code></pre>
+
+            <p>
+              Inside a method defined on <code>C</code>, zero-argument
+              <code>super()</code> starts after <code>C</code> in this order. Inside
+              a method defined on <code>B</code>, it starts after <code>B</code>.
+            </p>
+
+            <div class="callout">
+              The MRO is shared by ordinary inherited lookup and cooperative
+              <code>super()</code> calls, but <code>super()</code> begins after a
+              particular class rather than restarting at the instance.
+            </div>
+          </section>
+
+          <section id="extending-methods">
+            <p class="stack-section-number">07 — Beyond constructors</p>
+            <h2><code>super()</code> works with other methods</h2>
+
+            <pre class="python-code"><code>class Logger:
+    def log(self, message):
+        return f"Log start: {message}"
+
+
+class FileLogger(Logger):
+    def log(self, message):
+        parent_result = super().log(message)
+        return parent_result + " -&gt; writing to file"
+
+
+logger = FileLogger()
+print(logger.log("saved"))</code></pre>
+
+            <pre><code>Log start: saved -&gt; writing to file</code></pre>
+
+            <p>
+              The same mechanism that connects constructors can extend any
+              compatible inherited method.
+            </p>
+          </section>
+
+          <section id="kwargs-chain">
+            <p class="stack-section-number">08 — Flexible arguments</p>
+            <h2>Build a cooperative chain with <code>**kwargs</code></h2>
+
+            <p>
+              In more flexible hierarchies, each class can consume its own
+              keyword-only argument and forward the unused arguments.
+            </p>
+
+            <pre class="python-code"><code>class A:
+    def __init__(self, *, a=None, **kwargs):
+        self.a = a
+        super().__init__(**kwargs)
+
+
+class B(A):
+    def __init__(self, *, b=None, **kwargs):
+        self.b = b
+        super().__init__(**kwargs)
+
+
+class C(B):
+    def __init__(self, *, c=None, **kwargs):
+        self.c = c
+        super().__init__(**kwargs)
+
+
+item = C(a=1, b=2, c=3)
+
+print(item.a)
+print(item.b)
+print(item.c)</code></pre>
+
+            <pre><code>1
+2
+3</code></pre>
+
+            <p>The argument flow is:</p>
+
+            <pre><code>C consumes c; forwards a, b
+             ↓
+B consumes b; forwards a
+             ↓
+A consumes a; forwards nothing
+             ↓
+object.__init__()</code></pre>
+
+            <p>
+              Parameters such as <code>c</code>, <code>b</code>, and <code>a</code>
+              are removed from <code>kwargs</code> by Python's argument binding
+              before the method body runs. Only unconsumed keywords continue to
+              the next method.
+            </p>
+
+            <div class="callout">
+              Do not read values with <code>kwargs.get()</code> and then forward
+              the unchanged dictionary all the way to <code>object</code>.
+              <code>object.__init__()</code> does not accept leftover keyword
+              arguments.
+            </div>
+          </section>
+
+          <section id="object-init">
+            <p class="stack-section-number">09 — End of the chain</p>
+            <h2>Why the base class still calls <code>super()</code></h2>
+
+            <p>
+              Every ordinary Python class ultimately derives from
+              <code>object</code>.
+            </p>
+
+            <pre class="python-code"><code>class A:
+    pass
+
+
+print(A.__mro__)
+# (&lt;class '__main__.A'&gt;, &lt;class 'object'&gt;)</code></pre>
+
+            <p>
+              In the cooperative example, <code>A</code> may look like the final
+              custom class, but it may not always be last when another class is
+              added through multiple inheritance. Calling <code>super()</code>
+              lets the MRO decide what comes next.
+            </p>
+
+            <p>
+              When no other implementation remains, the call reaches
+              <code>object.__init__()</code>. At that point every custom keyword
+              must have been consumed.
+            </p>
+          </section>
+
+          <section id="cooperative-rules">
+            <p class="stack-section-number">10 — Cooperation rules</p>
+            <h2>Design methods that can form a chain</h2>
+
+            <p>Cooperative initialization works when participating classes agree:</p>
+
+            <ul>
+              <li>each implementation calls <code>super()</code> exactly once</li>
+              <li>each class handles only the state it owns</li>
+              <li>method signatures accept and forward compatible arguments</li>
+              <li>unknown keyword arguments are forwarded rather than discarded</li>
+              <li>all custom arguments are consumed before reaching <code>object</code></li>
+            </ul>
+
+            <p>
+              If one class omits <code>super()</code>, calls a base class directly,
+              or forwards incompatible arguments, it can break every class that
+              comes later in the MRO.
+            </p>
+          </section>
+
+          <section id="summary">
+            <p class="stack-section-number">11 — Summary</p>
+            <h2>Key takeaways</h2>
+
+            <ul>
+              <li>Python does not run all constructors automatically.</li>
+              <li><code>super()</code> continues lookup through the MRO.</li>
+              <li>Each constructor can initialize one layer of the same object.</li>
+              <li>Direct base-class calls do not cooperate with the MRO.</li>
+              <li>Explicit parameters are clearest for simple hierarchies.</li>
+              <li><code>**kwargs</code> can support cooperative, flexible chains.</li>
+            </ul>
+
+            <div class="callout">
+              <strong>Final idea:</strong> Cooperative inheritance works when
+              every class completes its responsibility and deliberately passes
+              control to the next class in the MRO.
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

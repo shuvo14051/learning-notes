@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Understand Python's object model: identity, equality, mutability, assignment, copying, and argument passing."
+    />
+
+    <title>Python Object Model: The Ground Truth | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="oop" data-post="python-object-model">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Object-Oriented Programming</p>
+
+          <h1>Python Object Model: The Ground Truth</h1>
+
+          <p>
+            Understand names, identity, mutability, copying, and argument
+            passing—the mechanics that make Python's object-oriented behavior
+            predictable.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-08-25">August 25, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <p>
+            If you understand Python's object model, object-oriented
+            programming stops feeling magical and starts feeling mechanical.
+            The central idea is simple: Python works with objects, and names
+            refer to those objects.
+          </p>
+
+          <section id="everything-is-an-object">
+            <h2>1. Everything is an object</h2>
+
+            <p>In Python, everything you interact with is an object:</p>
+
+            <ul>
+              <li>integers, strings, and lists</li>
+              <li>functions and classes</li>
+              <li>modules and class instances</li>
+            </ul>
+
+            <p>When you write:</p>
+
+            <pre class="python-code"><code>x = 10</code></pre>
+
+            <p>
+              Python creates—or reuses—an integer object and binds the name
+              <code>x</code> to that object. The name is not the value itself;
+              it is a reference to an object.
+            </p>
+
+            <div class="callout">
+              <strong>Remember:</strong> Names are labels. Objects exist
+              independently of the names that currently refer to them.
+            </div>
+          </section>
+
+          <section id="first-class-functions">
+            <h2>2. Functions are first-class objects</h2>
+
+            <p>
+              A first-class object can be assigned to a name, passed as an
+              argument, returned from another function, or stored in a data
+              structure. Python functions support all of these operations.
+            </p>
+
+            <pre class="python-code"><code>def greet():
+    return "hello"
+
+
+a = greet
+b = greet
+
+print(a())
+print(a is b)</code></pre>
+
+            <p>
+              Calling <code>a()</code> works because <code>a</code> refers to the
+              function object. Both <code>a</code> and <code>b</code> refer to that
+              same object, so <code>a is b</code> is <code>True</code>.
+            </p>
+
+            <div class="callout">
+              <strong>Key idea:</strong> A function definition creates a
+              function object and binds its name to that object.
+            </div>
+          </section>
+
+          <section id="identity-vs-equality">
+            <h2>3. Identity versus equality</h2>
+
+            <p>Every Python object has an identity, a type, and a value.</p>
+
+            <pre class="python-code"><code>a = [1, 2]
+b = [1, 2]
+
+print(a == b)  # True
+print(a is b)  # False</code></pre>
+
+            <p>
+              The <code>==</code> operator checks whether two objects have equal
+              values. The <code>is</code> operator checks whether two references
+              point to the exact same object.
+            </p>
+
+            <div class="callout">
+              <strong>Rule of thumb:</strong> Use <code>==</code> for value
+              comparison. Use <code>is</code> for identity checks, especially
+              checks such as <code>value is None</code>.
+            </div>
+          </section>
+
+          <section id="mutability">
+            <h2>4. Mutability versus immutability</h2>
+
+            <p>
+              A mutable object can change while keeping the same identity. A
+              list is mutable, so <code>append()</code> changes the existing
+              list object.
+            </p>
+
+            <pre class="python-code"><code>a = [1, 2]
+print(id(a))
+
+a.append(3)
+print(id(a))</code></pre>
+
+            <p>
+              Immutable objects cannot be changed in place. Integers are
+              immutable, so <code>x += 1</code> calculates a new integer and
+              rebinds <code>x</code> to it.
+            </p>
+
+            <pre class="python-code"><code>x = 10
+print(id(x))
+
+x += 1
+print(id(x))</code></pre>
+
+            <div class="callout">
+              <strong>Mutation</strong> changes an existing object.
+              <strong>Rebinding</strong> makes a name refer to a different
+              object.
+            </div>
+          </section>
+
+          <section id="assignment">
+            <h2>5. Assignment does not copy</h2>
+
+            <pre class="python-code"><code>a = [1, 2]
+b = a
+
+a.append(3)
+print(b)  # [1, 2, 3]</code></pre>
+
+            <p>
+              The assignment <code>b = a</code> does not create another list.
+              It binds <code>b</code> to the same list as <code>a</code>. A
+              mutation made through either name is therefore visible through
+              both names.
+            </p>
+          </section>
+
+          <section id="copying">
+            <h2>6. Shallow copy versus deep copy</h2>
+
+            <p>Nested mutable objects make copying more important.</p>
+
+            <pre class="python-code"><code>import copy
+
+a = [[1], [2]]
+b = a
+c = a.copy()
+d = copy.deepcopy(a)
+
+a[0].append(99)
+
+print(b)  # [[1, 99], [2]]
+print(c)  # [[1, 99], [2]]
+print(d)  # [[1], [2]]</code></pre>
+
+            <ul>
+              <li><code>b</code> refers to the same outer list as <code>a</code>.</li>
+              <li>
+                <code>c</code> is a new outer list, but it shares the original
+                inner lists.
+              </li>
+              <li>
+                <code>d</code> is a deep copy with recursively copied inner
+                lists.
+              </li>
+            </ul>
+
+            <div class="callout">
+              <strong>Shallow copy:</strong> copy the container but share its
+              nested objects. <strong>Deep copy:</strong> recursively copy the
+              complete object graph when possible.
+            </div>
+          </section>
+
+          <section id="argument-passing">
+            <h2>7. Passing objects to functions</h2>
+
+            <p>
+              Python passes objects by assignment. A function parameter becomes
+              a new local name referring to the object supplied by the caller.
+              If the function mutates that object, the caller can observe the
+              change.
+            </p>
+
+            <pre class="python-code"><code>def modify(items):
+    items.append(10)
+
+
+data = []
+modify(data)
+print(data)  # [10]</code></pre>
+
+            <p>
+              Rebinding the local parameter is different. It changes only what
+              the local name refers to; it does not rebind the caller's name.
+            </p>
+
+            <pre class="python-code"><code>def reassign(items):
+    items = [100]
+
+
+data = []
+reassign(data)
+print(data)  # []</code></pre>
+
+            <div class="callout">
+              <strong>Key distinction:</strong> Mutating the shared object can
+              affect the caller. Rebinding a local parameter does not.
+            </div>
+          </section>
+
+          <section id="nested-mutability">
+            <h2>8. The nested mutability trap</h2>
+
+            <pre class="python-code"><code>a = (1, 2, [3])
+b = a
+
+a[2].append(4)
+
+print(a)  # (1, 2, [3, 4])
+print(b)  # (1, 2, [3, 4])</code></pre>
+
+            <p>
+              A tuple is immutable: its references cannot be replaced. However,
+              the tuple can refer to a mutable list, and that list can still be
+              changed. Both names reveal the mutation because they refer to the
+              same tuple containing the same list.
+            </p>
+
+            <div class="callout">
+              <strong>Remember:</strong> An immutable container does not make
+              every object inside it immutable.
+            </div>
+          </section>
+
+          <section id="interview-questions">
+            <h2>Important interview questions</h2>
+
+            <h3>What is the difference between <code>==</code> and <code>is</code>?</h3>
+            <p>
+              <code>==</code> compares values; <code>is</code> compares object
+              identity.
+            </p>
+
+            <h3>Why do these two examples behave differently?</h3>
+
+            <pre class="python-code"><code>a = [1, 2]
+b = a
+a += [3]
+
+x = 10
+y = x
+x += 1</code></pre>
+
+            <p>
+              A list's in-place addition mutates the list, so <code>b</code> sees
+              the change. An integer cannot be mutated, so adding one creates a
+              new integer and rebinds <code>x</code>; <code>y</code> still refers
+              to the original integer.
+            </p>
+
+            <h3>What does this shallow-copy example print?</h3>
+
+            <pre class="python-code"><code>a = [[1], [2]]
+b = a.copy()
+a[0].append(5)
+print(b)</code></pre>
+
+            <p>
+              It prints <code>[[1, 5], [2]]</code> because the shallow copy
+              shares the inner lists.
+            </p>
+
+            <h3>What does “functions are first-class objects” mean?</h3>
+            <p>
+              Functions can be assigned, passed, returned, and stored just like
+              other Python objects.
+            </p>
+
+            <h3>What happens when a function name is rebound?</h3>
+
+            <pre class="python-code"><code>def f():
+    return 1
+
+
+g = f
+f = 10
+
+print(g())  # 1</code></pre>
+
+            <p>
+              Rebinding <code>f</code> does not change the function object or the
+              existing reference stored in <code>g</code>.
+            </p>
+
+            <h3>How does Python pass arguments?</h3>
+            <p>
+              Parameters are local names bound to the supplied objects.
+              Mutating a shared object may affect the caller, while rebinding a
+              parameter affects only the local name.
+            </p>
+          </section>
+
+          <div class="callout">
+            <strong>The ground truth:</strong> Names refer to objects.
+            Assignment binds names, mutation changes objects, and identity tells
+            you whether two references lead to the same object.
+          </div>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

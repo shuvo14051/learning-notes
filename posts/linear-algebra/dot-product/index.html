@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="The dot product combines two vectors into one number that tells us how strongly they point in the same direction."
+    />
+    <title>
+      Dot Product: Geometry Behind Similarity | Ahamed Learning Notes
+    </title>
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+  <body data-topic="linear-algebra" data-post="dot-product">
+    <div data-header></div>
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Linear Algebra</p>
+          <h1>Dot Product: Geometry Behind Similarity</h1>
+          <p>
+            The dot product combines two vectors into one number that tells us
+            how strongly they point in the same direction.
+          </p>
+          <div class="meta">
+            <time>July 10, 2026</time><span>•</span
+            ><span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+        <div class="article-content">
+          <p>
+            The coordinate formula is easy to compute, but the geometric meaning
+            is what makes the dot product useful.
+          </p>
+          <div class="math">a · b = ∑ᵢ aᵢbᵢ = ‖a‖‖b‖ cos(θ)</div>
+          <h2>Direction and magnitude</h2>
+          <p>
+            A positive dot product means the vectors point generally together. A
+            negative result means they point in opposing directions. A zero
+            result means they are perpendicular.
+          </p>
+          <h2>A concrete calculation</h2>
+          <p>
+            For a = [1, 2] and b = [3, 4], the dot product is 1(3) + 2(4) = 11.
+          </p>
+          <pre><code>def dot_product(a, b):
+    return sum(x * y for x, y in zip(a, b))</code></pre>
+          <h2>Projection</h2>
+          <p>Projection asks how much of one vector lies along another.</p>
+          <div class="math">projᵦ(a) = ((a · b) / (b · b)) b</div>
+          <div class="callout">
+            <strong>Key idea:</strong> the dot product measures alignment while
+            preserving magnitude. Cosine similarity divides out both magnitudes
+            when direction alone matters.
+          </div>
+          <section class="migration">
+            <strong>Adding your existing HTML</strong>
+            <p>
+              Keep your article content inside this
+              <code>&lt;div class="article-content"&gt;</code>. Copy this
+              folder, rename it, replace the title and content, then add one
+              matching entry to the topic data file.
+            </p>
+          </section>
+        </div>
+      </article>
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas across the site.
+          </p>
+        </div>
+      </aside>
+    </main>
+    <div data-footer></div>
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

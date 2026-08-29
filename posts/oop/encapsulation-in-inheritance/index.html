@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Learn how public, non-public, and name-mangled members behave across Python inheritance, including inherited and overridden properties."
+    />
+
+    <title>Encapsulation in Python Inheritance | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="oop" data-post="encapsulation-in-inheritance">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Object-Oriented Programming</p>
+
+          <h1>Encapsulation in Python Inheritance</h1>
+
+          <p>
+            Decide what child classes should depend on, what remains an
+            implementation detail, and how properties preserve control across a
+            hierarchy.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-09-06">September 6, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content stack-guide">
+          <p>
+            Inheritance raises an important design question: which parts of a
+            parent class form a supported interface for subclasses, and which
+            parts should remain under the parent's control?
+          </p>
+
+          <p>
+            Python does not enforce traditional protected or private access.
+            Instead, naming conventions and name mangling communicate intent,
+            while methods and properties provide controlled interfaces.
+          </p>
+
+          <section id="core-rule">
+            <p class="stack-section-number">01 — The basic rule</p>
+            <h2>Read names as API signals</h2>
+
+            <div class="stack-table-wrap">
+              <table class="stack-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Meaning for a child class</th>
+                    <th>Python behavior</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>x</code></td>
+                    <td>Supported public interface</td>
+                    <td>Normally accessible</td>
+                  </tr>
+                  <tr>
+                    <td><code>_x</code></td>
+                    <td>Subclass-accessible implementation detail</td>
+                    <td>Accessible by convention</td>
+                  </tr>
+                  <tr>
+                    <td><code>__x</code></td>
+                    <td>Owned by the defining class</td>
+                    <td>Name-mangled using that class name</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="callout">
+              Public names are promises. Single-underscore names are internal
+              hooks or details. Double-underscore names reduce accidental
+              collisions; they do not create security.
+            </div>
+          </section>
+
+          <section id="public-members">
+            <p class="stack-section-number">02 — Public interface</p>
+            <h2>Child classes can depend on public members</h2>
+
+            <pre class="python-code"><code>class Parent:
+    def __init__(self):
+        self.value = 10
+
+
+class Child(Parent):
+    def show(self):
+        return self.value
+
+    def double(self):
+        self.value *= 2
+
+
+child = Child()
+print(child.show())  # 10
+
+child.double()
+print(child.show())  # 20</code></pre>
+
+            <p>
+              The public attribute is part of the parent's supported interface.
+              A child can read it, assign it, and build behavior around it—while
+              still respecting any documented rules.
+            </p>
+          </section>
+
+          <section id="non-public-members">
+            <p class="stack-section-number">03 — Internal interface</p>
+            <h2>A single underscore means “use carefully”</h2>
+
+            <pre class="python-code"><code>class Parent:
+    def __init__(self):
+        self._value = 10
+
+
+class Child(Parent):
+    def change(self):
+        self._value = 50
+
+
+child = Child()
+child.change()
+print(child._value)  # 50</code></pre>
+
+            <p>
+              Python permits the access. The underscore says the name is not
+              part of the broad public API and may depend on internal
+              assumptions.
+            </p>
+
+            <p>A subclass might reasonably use a non-public member when:</p>
+
+            <ul>
+              <li>the parent documents it as a subclass extension point</li>
+              <li>the child is carefully extending internal behavior</li>
+              <li>the project controls both classes and can evolve them together</li>
+            </ul>
+
+            <p>A child should avoid:</p>
+
+            <ul>
+              <li>bypassing parent validation</li>
+              <li>changing state the parent expects to manage</li>
+              <li>depending on undocumented storage layout without need</li>
+            </ul>
+
+            <div class="callout">
+              Accessibility is not the same as stability. A subclass can access
+              <code>_value</code>, but the parent is not promising every caller
+              that this internal name will remain unchanged forever.
+            </div>
+          </section>
+
+          <section id="name-mangled-members">
+            <p class="stack-section-number">04 — Class-owned names</p>
+            <h2>Double underscores trigger name mangling</h2>
+
+            <pre class="python-code"><code>class Parent:
+    def __init__(self):
+        self.__value = 10
+
+
+class Child(Parent):
+    def show(self):
+        return self.__value
+
+
+child = Child()
+child.show()
+# AttributeError: 'Child' object has no attribute '_Child__value'</code></pre>
+
+            <p>
+              Inside <code>Parent</code>, Python rewrites
+              <code>self.__value</code> to <code>self._Parent__value</code>.
+              Inside <code>Child</code>, the same spelling would become
+              <code>self._Child__value</code>. The child is therefore asking for
+              a different name.
+            </p>
+
+            <p>
+              The parent value remains technically reachable through the
+              mangled spelling, but depending on that spelling defeats the
+              purpose of keeping the name owned by the parent.
+            </p>
+
+            <pre class="python-code"><code>print(child._Parent__value)  # 10</code></pre>
+
+            <div class="callout">
+              Double underscores do not make data inaccessible. They protect a
+              class namespace from accidental reuse by subclasses.
+            </div>
+          </section>
+
+          <section id="same-private-name">
+            <p class="stack-section-number">05 — Separate storage</p>
+            <h2>The same double-underscore name can coexist</h2>
+
+            <pre class="python-code"><code>class Parent:
+    def __init__(self):
+        self.__value = 10
+
+    def parent_value(self):
+        return self.__value
+
+
+class Child(Parent):
+    def __init__(self):
+        super().__init__()
+        self.__value = 50
+
+    def child_value(self):
+        return self.__value
+
+
+child = Child()
+
+print(child.__dict__)
+print(child.parent_value())
+print(child.child_value())</code></pre>
+
+            <pre><code>{'_Parent__value': 10, '_Child__value': 50}
+10
+50</code></pre>
+
+            <p>
+              The parent and child each own a separate attribute. Neither
+              assignment overwrites the other.
+            </p>
+
+            <p>
+              This collision avoidance—not strict privacy—is the primary reason
+              to use name mangling in inheritance-heavy designs.
+            </p>
+          </section>
+
+          <section id="controlled-access">
+            <p class="stack-section-number">06 — Public behavior</p>
+            <h2>Use methods instead of reaching into storage</h2>
+
+            <pre class="python-code"><code>class Parent:
+    def __init__(self):
+        self.__balance = 100
+
+    def get_balance(self):
+        return self.__balance
+
+
+class Child(Parent):
+    def show_balance(self):
+        return self.get_balance()
+
+
+child = Child()
+print(child.show_balance())  # 100</code></pre>
+
+            <p>
+              The child uses a public method rather than depending on the
+              parent's storage name. The parent can later compute the balance,
+              fetch it elsewhere, or change its internal representation without
+              forcing the child to change.
+            </p>
+
+            <div class="callout">
+              A public interface creates freedom on both sides: the child gets a
+              stable operation, and the parent can evolve its implementation.
+            </div>
+          </section>
+
+          <section id="method-names">
+            <p class="stack-section-number">07 — Methods</p>
+            <h2>Methods follow the same naming conventions</h2>
+
+            <pre class="python-code"><code>class Parent:
+    def public_method(self):
+        return 1
+
+    def _internal_method(self):
+        return 2
+
+    def __class_owned_method(self):
+        return 3
+
+
+class Child(Parent):
+    def test(self):
+        return (
+            self.public_method(),
+            self._internal_method(),
+        )
+
+
+print(Child().test())  # (1, 2)</code></pre>
+
+            <p>
+              The public method is a supported dependency. The single-underscore
+              method is callable but internal. The double-underscore method is
+              mangled as <code>_Parent__class_owned_method</code>, so a method
+              spelled <code>__class_owned_method</code> in <code>Child</code>
+              would be separate rather than an override.
+            </p>
+          </section>
+
+          <section id="properties">
+            <p class="stack-section-number">08 — Controlled attributes</p>
+            <h2>A property separates interface from storage</h2>
+
+            <pre class="python-code"><code>class Parent:
+    def __init__(self):
+        self.__value = 10
+
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, new_value):
+        if new_value &lt; 0:
+            raise ValueError("value cannot be negative")
+
+        self.__value = new_value
+
+
+parent = Parent()
+parent.value = 20
+print(parent.value)  # 20</code></pre>
+
+            <p>
+              The public name is <code>value</code>. The name-mangled
+              <code>__value</code> is only the current storage detail. Callers use
+              normal attribute syntax while the class keeps validation under its
+              control.
+            </p>
+          </section>
+
+          <section id="inherited-property">
+            <p class="stack-section-number">09 — Property inheritance</p>
+            <h2>A child can use the inherited property</h2>
+
+            <pre class="python-code"><code>class Child(Parent):
+    def show(self):
+        return self.value
+
+    def increase(self, amount):
+        self.value += amount
+
+
+child = Child()
+child.increase(5)
+
+print(child.show())  # 15</code></pre>
+
+            <p>
+              The child never touches <code>Parent</code>'s private storage. Reads
+              go through the inherited getter and updates go through the
+              inherited setter, including its validation.
+            </p>
+          </section>
+
+          <section id="override-property-getter">
+            <p class="stack-section-number">10 — Getter specialization</p>
+            <h2>A child can specialize a property getter</h2>
+
+            <pre class="python-code"><code>class DoubledChild(Parent):
+    @Parent.value.getter
+    def value(self):
+        return super().value * 2
+
+
+child = DoubledChild()
+
+print(child.value)  # 20
+
+child.value = 7
+print(child.value)  # 14</code></pre>
+
+            <p>
+              The <code>@Parent.value.getter</code> decorator creates a new
+              property with the specialized getter while preserving the parent
+              property's setter and deleter. The getter uses
+              <code>super().value</code> to retrieve the parent-managed value.
+            </p>
+
+            <div class="callout">
+              Writing only <code>@property</code> in the child would create a new
+              getter-only property and discard the inherited setter. Reusing the
+              parent property's <code>getter</code> decorator preserves it.
+            </div>
+          </section>
+
+          <section id="override-property-setter">
+            <p class="stack-section-number">11 — Setter specialization</p>
+            <h2>A child can extend assignment rules</h2>
+
+            <pre class="python-code"><code>class LimitedChild(Parent):
+    @Parent.value.setter
+    def value(self, new_value):
+        if new_value &gt; 100:
+            raise ValueError("child value cannot exceed 100")
+
+        Parent.value.__set__(self, new_value)
+
+
+child = LimitedChild()
+child.value = 80
+print(child.value)  # 80
+
+child.value = 120
+# ValueError: child value cannot exceed 100</code></pre>
+
+            <p>
+              The child's setter enforces its extra maximum, then delegates to
+              the parent property descriptor. The parent setter still enforces
+              its non-negative rule and updates the parent's name-mangled
+              storage.
+            </p>
+
+            <p>
+              Property setter overriding is an advanced technique. When the
+              validation logic is meant to be extended frequently, a documented
+              protected validation method may produce a simpler subclass API.
+            </p>
+          </section>
+
+          <section id="extension-hook">
+            <p class="stack-section-number">12 — Designed extension</p>
+            <h2>Expose a deliberate subclass hook</h2>
+
+            <pre class="python-code"><code>class Parent:
+    def __init__(self, value):
+        self.value = value
+
+    def _validate_value(self, value):
+        if value &lt; 0:
+            raise ValueError("value cannot be negative")
+
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, new_value):
+        self._validate_value(new_value)
+        self.__value = new_value
+
+
+class LimitedChild(Parent):
+    def _validate_value(self, value):
+        super()._validate_value(value)
+
+        if value &gt; 100:
+            raise ValueError("value cannot exceed 100")</code></pre>
+
+            <p>
+              Here, <code>_validate_value</code> is intentionally designed as a
+              subclass extension point. The property remains the public
+              interface, and the parent remains responsible for storage.
+            </p>
+
+            <div class="callout">
+              A documented protected hook is often better than asking subclasses
+              to replace an entire property or depend on private storage.
+            </div>
+          </section>
+
+          <section id="summary">
+            <p class="stack-section-number">13 — Summary</p>
+            <h2>The inheritance encapsulation model</h2>
+
+            <ul>
+              <li><code>x</code> is the supported public interface.</li>
+              <li><code>_x</code> is internal but may serve as a subclass hook.</li>
+              <li><code>__x</code> belongs to the defining class through name mangling.</li>
+              <li>Child classes should prefer interfaces over parent storage.</li>
+              <li>Inherited properties preserve validation and hide representation.</li>
+              <li>Documented protected methods can provide clean extension points.</li>
+            </ul>
+
+            <div class="callout">
+              <strong>Final idea:</strong> Clean inheritance is less about what
+              a child can technically access and more about which dependencies
+              the parent deliberately promises to support.
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

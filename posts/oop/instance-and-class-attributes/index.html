@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Understand where Python stores instance data and class attributes, how attribute lookup works, and why instance attributes can shadow class attributes."
+    />
+
+    <title>Instance and Class Attributes in Python | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="oop" data-post="instance-and-class-attributes">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Object-Oriented Programming</p>
+
+          <h1>Instance and Class Attributes in Python</h1>
+
+          <p>
+            Move beyond the blueprint analogy and understand where Python
+            stores object state, shared behavior, and class-level defaults.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-08-27">August 27, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <p>
+            Beginner tutorials often say, “A class is a blueprint, and an
+            object is built from that blueprint.” The analogy is useful, but it
+            hides the mechanics that explain where attributes live, why
+            <code>self</code> exists, and how instances share class behavior.
+          </p>
+
+          <p>Let’s replace the analogy with a more precise mental model.</p>
+
+          <section id="core-model">
+            <h2>1. The core model</h2>
+
+            <p>For an ordinary Python class:</p>
+
+            <ol>
+              <li>
+                The <strong>class</strong> normally stores shared behavior and
+                class-level attributes.
+              </li>
+              <li>
+                Each <strong>instance</strong> normally stores its own state and
+                has its own identity.
+              </li>
+              <li>
+                Functions defined in the class body are stored once on the
+                class and shared by its instances.
+              </li>
+            </ol>
+
+            <div class="callout">
+              <strong>Mental model:</strong> The instance stores individual
+              state. The class supplies shared behavior and shared defaults.
+            </div>
+          </section>
+
+          <section id="inspect-instance">
+            <h2>2. Inspect what an instance stores</h2>
+
+            <pre class="python-code"><code>class Dog:
+    def __init__(self, name):
+        self.name = name
+
+    def speak(self):
+        return self.name + " says woof"
+
+
+d = Dog("Fido")</code></pre>
+
+            <p>
+              The assignment <code>self.name = name</code> creates an attribute
+              on the new instance. For a typical class with an instance
+              dictionary, we can inspect that state using
+              <code>__dict__</code>:
+            </p>
+
+            <pre class="python-code"><code>print(d.__dict__)</code></pre>
+
+            <p>The result is:</p>
+
+            <pre><code>{'name': 'Fido'}</code></pre>
+
+            <p>
+              The instance dictionary contains <code>name</code>, but it does not
+              contain <code>speak</code>. The function was defined in the class
+              body, so it lives in the class dictionary:
+            </p>
+
+            <pre class="python-code"><code>print(Dog.__dict__["speak"])</code></pre>
+
+            <p>This displays a function object similar to:</p>
+
+            <pre><code>&lt;function Dog.speak at 0x...&gt;</code></pre>
+
+            <div class="callout">
+              The <code>Dog</code> class stores one <code>speak</code> function.
+              Every <code>Dog</code> instance can use that shared function with
+              its own instance data.
+            </div>
+          </section>
+
+          <section id="method-call">
+            <h2>3. What happens during a method call?</h2>
+
+            <p>Consider this call:</p>
+
+            <pre class="python-code"><code>d.speak()</code></pre>
+
+            <p>For this ordinary instance method, it has the same effect as:</p>
+
+            <pre class="python-code"><code>Dog.speak(d)</code></pre>
+
+            <p>This works because:</p>
+
+            <ul>
+              <li><code>Dog.speak</code> accesses the function through the class.</li>
+              <li>The function expects an instance as its first argument.</li>
+              <li><code>d.speak</code> creates a bound method that supplies <code>d</code>.</li>
+            </ul>
+
+            <p>Calling the function through the class without an instance fails:</p>
+
+            <pre class="python-code"><code>Dog.speak()  # TypeError: the required self argument is missing</code></pre>
+
+            <p>
+              This connection between a class function and an instance is
+              explored in detail in the bound-method note.
+            </p>
+          </section>
+
+          <section id="instance-data">
+            <h2>4. Instance attributes hold individual data</h2>
+
+            <p>
+              The expression <code>Dog.name</code> fails in this example because
+              no <code>name</code> attribute was assigned to the class. The name
+              is created separately on each instance inside <code>__init__</code>.
+            </p>
+
+            <pre class="python-code"><code>d1 = Dog("Fido")
+d2 = Dog("Buddy")
+
+print(d1.name)  # Fido
+print(d2.name)  # Buddy</code></pre>
+
+            <p>
+              There are two objects, two separate <code>name</code> attributes,
+              and one shared <code>speak</code> function on the class.
+            </p>
+          </section>
+
+          <section id="instance-vs-class">
+            <h2>5. Instance attributes versus class attributes</h2>
+
+            <h3>Instance attribute</h3>
+
+            <p>
+              An instance attribute is assigned through an instance—usually
+              through <code>self</code> inside <code>__init__</code>. Each object
+              can hold a different value.
+            </p>
+
+            <pre class="python-code"><code>class Car:
+    def __init__(self, brand):
+        self.brand = brand</code></pre>
+
+            <p>Each <code>Car</code> instance can have its own brand.</p>
+
+            <h3>Class attribute</h3>
+
+            <p>
+              A class attribute is assigned in the class body and is available
+              through the class and its instances.
+            </p>
+
+            <pre class="python-code"><code>class Car:
+    wheels = 4
+
+    def __init__(self, brand):
+        self.brand = brand</code></pre>
+
+            <pre class="python-code"><code>c1 = Car("Toyota")
+c2 = Car("Honda")
+
+print(c1.wheels)  # 4
+print(c2.wheels)  # 4
+print(Car.wheels) # 4</code></pre>
+
+            <p>
+              Neither instance needs its own <code>wheels</code> attribute. Both
+              find the shared value on <code>Car</code>.
+            </p>
+          </section>
+
+          <section id="attribute-lookup">
+            <h2>6. Attribute lookup and inheritance</h2>
+
+            <p>
+              For a simple attribute such as the integer
+              <code>Car.wheels</code>, evaluating <code>c1.wheels</code> can be
+              understood with this lookup path:
+            </p>
+
+            <ol>
+              <li>Look for <code>wheels</code> on <code>c1</code>.</li>
+              <li>Look on <code>Car</code>.</li>
+              <li>Continue through the parent classes according to the method resolution order.</li>
+            </ol>
+
+            <p>
+              Python's complete lookup rules also account for descriptors, but
+              this model accurately explains ordinary instance and class data.
+            </p>
+
+            <pre class="python-code"><code>print(c1.__dict__)       # {'brand': 'Toyota'}
+print(Car.__dict__["wheels"])  # 4</code></pre>
+
+            <p>
+              Because <code>c1</code> has no <code>wheels</code> attribute of its
+              own, lookup continues to the class and returns
+              <code>Car.wheels</code>.
+            </p>
+          </section>
+
+          <section id="shadowing">
+            <h2>7. An instance attribute can shadow a class attribute</h2>
+
+            <p>Now assign a value through one instance:</p>
+
+            <pre class="python-code"><code>c1.wheels = 6
+
+print(c1.wheels)  # 6
+print(c2.wheels)  # 4
+print(Car.wheels) # 4</code></pre>
+
+            <p>
+              The assignment creates a new <code>wheels</code> entry in
+              <code>c1.__dict__</code>. It does not update
+              <code>Car.wheels</code>.
+            </p>
+
+            <pre class="python-code"><code>print(c1.__dict__)
+# {'brand': 'Toyota', 'wheels': 6}
+
+print(c2.__dict__)
+# {'brand': 'Honda'}</code></pre>
+
+            <p>
+              Lookup finds <code>c1.wheels</code> before it needs the class value,
+              so the instance attribute <strong>shadows</strong> the class
+              attribute. The other instance still falls back to the class.
+            </p>
+
+            <div class="callout">
+              <strong>Shadowing does not overwrite the class attribute.</strong>
+              It gives one instance an attribute with the same name, hiding the
+              class value for lookups through that instance.
+            </div>
+          </section>
+
+          <section id="change-class-attribute">
+            <h2>8. Change the class attribute itself</h2>
+
+            <p>To update the shared value, assign through the class:</p>
+
+            <pre class="python-code"><code>Car.wheels = 8
+
+print(c1.wheels)  # 6
+print(c2.wheels)  # 8
+print(Car.wheels) # 8</code></pre>
+
+            <ul>
+              <li>
+                <code>c2</code> has no instance-level <code>wheels</code>, so it
+                sees the updated class value.
+              </li>
+              <li>
+                <code>c1</code> still has its own <code>wheels</code>, so its value
+                remains <code>6</code>.
+              </li>
+            </ul>
+
+            <p>
+              Deleting the shadowing attribute would make <code>c1</code> fall
+              back to the class again:
+            </p>
+
+            <pre class="python-code"><code>del c1.wheels
+print(c1.wheels)  # 8</code></pre>
+          </section>
+
+          <section id="mutable-class-attributes">
+            <h2>9. Be careful with mutable class attributes</h2>
+
+            <p>
+              Class attributes are shared. That is useful for constants and
+              defaults, but it can surprise you when the shared object is
+              mutable.
+            </p>
+
+            <pre class="python-code"><code>class Team:
+    members = []
+
+
+team_a = Team()
+team_b = Team()
+
+team_a.members.append("Ahamed")
+print(team_b.members)  # ['Ahamed']</code></pre>
+
+            <p>
+              Both instances find the same list on the class. If each instance
+              should have its own list, create it in <code>__init__</code>:
+            </p>
+
+            <pre class="python-code"><code>class Team:
+    def __init__(self):
+        self.members = []</code></pre>
+
+            <div class="callout">
+              Put shared values on the class. Put independently mutable state
+              on each instance.
+            </div>
+          </section>
+
+          <section id="summary">
+            <h2>Summary</h2>
+
+            <ul>
+              <li><strong>Class:</strong> shared behavior and shared defaults.</li>
+              <li><strong>Instance:</strong> individual state and identity.</li>
+              <li>
+                <strong>Attribute access:</strong> finds an instance value when
+                present, otherwise it can fall back to the class hierarchy.
+              </li>
+              <li>
+                <strong>Shadowing:</strong> an instance attribute hides a class
+                attribute of the same name for that instance.
+              </li>
+            </ul>
+
+            <div class="callout">
+              Understanding where attributes are stored turns many surprising
+              OOP behaviors into predictable lookup rules.
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

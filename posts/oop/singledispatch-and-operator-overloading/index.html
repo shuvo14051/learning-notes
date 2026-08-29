@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Explore advanced Python polymorphism with singledispatch, singledispatchmethod, operator overloading, reflected operations, and special methods."
+    />
+
+    <title>singledispatch and Operator Overloading in Python | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="oop" data-post="singledispatch-and-operator-overloading">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Object-Oriented Programming</p>
+
+          <h1><code>singledispatch</code> and Operator Overloading</h1>
+
+          <p>
+            Extend Python behavior by dispatching on types and teaching custom
+            objects how to participate in operators and built-in protocols.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-09-08">September 8, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content stack-guide">
+          <p>
+            Flexible arguments and method overriding cover many polymorphic
+            designs. Python also provides two more explicit mechanisms:
+            <code>singledispatch</code> selects a function implementation by
+            type, while special methods define how objects interact with
+            operators and built-in functions.
+          </p>
+
+          <section id="singledispatch">
+            <p class="stack-section-number">01 — Generic functions</p>
+            <h2>Dispatch on the first argument's type</h2>
+
+            <p>
+              <code>functools.singledispatch</code> turns one function into a
+              generic function with a registry of type-specific implementations.
+            </p>
+
+            <pre class="python-code"><code>from functools import singledispatch
+
+
+@singledispatch
+def process(value):
+    return f"default: {value}"
+
+
+@process.register
+def _(value: int):
+    return f"int: {value * 2}"
+
+
+@process.register
+def _(value: str):
+    return f"str: {value.upper()}"
+
+
+print(process(10))
+print(process("hello"))
+print(process(3.14))</code></pre>
+
+            <pre><code>int: 20
+str: HELLO
+default: 3.14</code></pre>
+
+            <p>
+              The decorated base function is the fallback. Registered
+              implementations handle selected types. Dispatch always uses the
+              type of the first argument passed to the generic function.
+            </p>
+
+            <div class="callout">
+              <code>singledispatch</code> is runtime single dispatch—not
+              traditional signature-based overloading. It does not select an
+              implementation from every argument's combined types.
+            </div>
+          </section>
+
+          <section id="registry">
+            <p class="stack-section-number">02 — Selection</p>
+            <h2>How the dispatch registry works</h2>
+
+            <p>A generic function maintains mappings from types to functions:</p>
+
+            <pre><code>object → default implementation
+int    → integer implementation
+str    → string implementation</code></pre>
+
+            <p>When <code>process(value)</code> runs:</p>
+
+            <ol>
+              <li>Python examines <code>type(value)</code>.</li>
+              <li>The dispatcher finds the most specific registered compatible type.</li>
+              <li>That implementation receives the original arguments.</li>
+              <li>If no specialized type matches, the base implementation runs.</li>
+            </ol>
+
+            <p>The registry and selection can be inspected:</p>
+
+            <pre class="python-code"><code>print(process.registry)
+print(process.dispatch(int))
+print(process.dispatch(float))</code></pre>
+
+            <p>
+              <code>dispatch(int)</code> returns the registered integer handler.
+              With no float handler, <code>dispatch(float)</code> returns the
+              fallback registered for <code>object</code>.
+            </p>
+          </section>
+
+          <section id="external-registration">
+            <p class="stack-section-number">03 — Extensibility</p>
+            <h2>Register behavior from another module</h2>
+
+            <p>
+              Code can add support for a new type without editing the module that
+              defined the generic function.
+            </p>
+
+            <h3><code>core.py</code></h3>
+
+            <pre class="python-code"><code>from functools import singledispatch
+
+
+@singledispatch
+def process(value):
+    return f"default: {value}"
+
+
+@process.register
+def _(value: int):
+    return f"int: {value * 2}"</code></pre>
+
+            <h3><code>plugin.py</code></h3>
+
+            <pre class="python-code"><code>from core import process
+
+
+@process.register
+def _(value: list):
+    return f"list length: {len(value)}"</code></pre>
+
+            <h3><code>main.py</code></h3>
+
+            <pre class="python-code"><code>import core
+import plugin  # Runs the registration
+
+
+print(core.process(10))
+print(core.process([1, 2, 3, 4]))
+print(core.process("hello"))</code></pre>
+
+            <pre><code>int: 20
+list length: 4
+default: hello</code></pre>
+
+            <p>
+              Importing <code>plugin</code> executes its decorator and updates the
+              shared registry. The core source remains unchanged.
+            </p>
+          </section>
+
+          <section id="inheritance-dispatch">
+            <p class="stack-section-number">04 — Type hierarchy</p>
+            <h2>Dispatch understands inheritance</h2>
+
+            <pre class="python-code"><code>from functools import singledispatch
+
+
+class Shape:
+    def area(self):
+        raise NotImplementedError
+
+
+class Rectangle(Shape):
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
+    def area(self):
+        return self.width * self.height
+
+
+class Square(Rectangle):
+    def __init__(self, side):
+        super().__init__(side, side)
+
+
+@singledispatch
+def describe(value):
+    return "Unknown object"
+
+
+@describe.register
+def _(shape: Shape):
+    return f"Shape with area {shape.area()}"
+
+
+print(describe(Rectangle(4, 5)))
+print(describe(Square(3)))</code></pre>
+
+            <pre><code>Shape with area 20
+Shape with area 9</code></pre>
+
+            <p>
+              No handlers are registered specifically for
+              <code>Rectangle</code> or <code>Square</code>. Their MROs contain
+              <code>Shape</code>, so the registered <code>Shape</code> handler is
+              compatible.
+            </p>
+
+            <p>
+              If a <code>Rectangle</code> handler were added, it would be more
+              specific than <code>Shape</code> for both rectangle and square
+              objects.
+            </p>
+          </section>
+
+          <section id="singledispatchmethod">
+            <p class="stack-section-number">05 — Generic methods</p>
+            <h2>Use <code>singledispatchmethod</code> inside a class</h2>
+
+            <p>
+              Ordinary <code>singledispatch</code> would see <code>self</code> as
+              the first argument of an instance method. The
+              <code>singledispatchmethod</code> decorator instead dispatches on
+              the first non-<code>self</code>, non-<code>cls</code> argument.
+            </p>
+
+            <pre class="python-code"><code>from functools import singledispatchmethod
+
+
+class Processor:
+    @singledispatchmethod
+    def process(self, value):
+        return f"default: {value}"
+
+    @process.register
+    def _(self, value: int):
+        return f"int: {value * 2}"
+
+    @process.register
+    def _(self, value: str):
+        return f"str: {value.upper()}"
+
+
+processor = Processor()
+
+print(processor.process(10))
+print(processor.process("hello"))
+print(processor.process(3.14))</code></pre>
+
+            <pre><code>int: 20
+str: HELLO
+default: 3.14</code></pre>
+          </section>
+
+          <section id="when-dispatch">
+            <p class="stack-section-number">06 — Design choice</p>
+            <h2>When is single dispatch useful?</h2>
+
+            <p>It fits when:</p>
+
+            <ul>
+              <li>behavior belongs to an external operation rather than the input class</li>
+              <li>you cannot or should not modify the input types</li>
+              <li>new type handlers should be registered independently</li>
+              <li>the first argument's type is enough to select behavior</li>
+            </ul>
+
+            <p>
+              Prefer an ordinary polymorphic method when the behavior naturally
+              belongs to the object itself. Prefer simple branching when there
+              are only one or two clear cases and a registry would add ceremony.
+            </p>
+          </section>
+
+          <section id="operator-overloading">
+            <p class="stack-section-number">07 — Python protocols</p>
+            <h2>Operator overloading maps syntax to special methods</h2>
+
+            <p>
+              Operator overloading defines what operators and built-in functions
+              mean for a custom class. Python already uses this model for its
+              built-in types:
+            </p>
+
+            <pre class="python-code"><code>print(5 + 3)       # Numeric addition
+print("a" + "b")   # String concatenation</code></pre>
+
+            <p>Common mappings include:</p>
+
+            <div class="stack-table-wrap">
+              <table class="stack-table">
+                <thead>
+                  <tr>
+                    <th>Syntax</th>
+                    <th>Primary special method</th>
+                    <th>Purpose</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td><code>a + b</code></td><td><code>a.__add__(b)</code></td><td>Add or combine</td></tr>
+                  <tr><td><code>a - b</code></td><td><code>a.__sub__(b)</code></td><td>Subtract</td></tr>
+                  <tr><td><code>a * b</code></td><td><code>a.__mul__(b)</code></td><td>Multiply</td></tr>
+                  <tr><td><code>a / b</code></td><td><code>a.__truediv__(b)</code></td><td>True division</td></tr>
+                  <tr><td><code>a == b</code></td><td><code>a.__eq__(b)</code></td><td>Value equality</td></tr>
+                  <tr><td><code>a &lt; b</code></td><td><code>a.__lt__(b)</code></td><td>Ordering</td></tr>
+                  <tr><td><code>len(a)</code></td><td><code>a.__len__()</code></td><td>Length</td></tr>
+                  <tr><td><code>str(a)</code></td><td><code>a.__str__()</code></td><td>Human-readable text</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p>
+              This syntax is conceptual: Python's data model controls the full
+              dispatch procedure, including subclass priority and reflected
+              methods. You normally implement special methods rather than call
+              them directly.
+            </p>
+          </section>
+
+          <section id="vector-addition">
+            <p class="stack-section-number">08 — Addition</p>
+            <h2>Teach a vector how to use <code>+</code></h2>
+
+            <pre class="python-code"><code>class Vector:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __add__(self, other):
+        if not isinstance(other, Vector):
+            return NotImplemented
+
+        return Vector(self.x + other.x, self.y + other.y)
+
+    def __str__(self):
+        return f"({self.x}, {self.y})"
+
+
+vector_1 = Vector(2, 3)
+vector_2 = Vector(4, 5)
+
+print(vector_1 + vector_2)</code></pre>
+
+            <pre><code>(6, 8)</code></pre>
+
+            <p>
+              The addition creates a new vector rather than mutating either
+              operand. Returning <code>NotImplemented</code> for another type
+              allows Python to try the reflected operation before ultimately
+              raising <code>TypeError</code>.
+            </p>
+
+            <div class="callout">
+              Inside binary special methods, return <code>NotImplemented</code>
+              for unsupported operand types. Do not raise
+              <code>NotImplementedError</code>; the two values have different
+              purposes.
+            </div>
+          </section>
+
+          <section id="equality">
+            <p class="stack-section-number">09 — Equality</p>
+            <h2>Define value comparison with <code>__eq__</code></h2>
+
+            <p>
+              Without a custom equality method, ordinary user-defined objects do
+              not compare equal merely because their attributes contain the same
+              values.
+            </p>
+
+            <pre class="python-code"><code>class Vector:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __eq__(self, other):
+        if not isinstance(other, Vector):
+            return NotImplemented
+
+        return self.x == other.x and self.y == other.y
+
+
+vector_1 = Vector(2, 3)
+vector_2 = Vector(2, 3)
+
+print(vector_1 == vector_2)  # True</code></pre>
+
+            <p>
+              The method defines logical equality from the values that matter to
+              the class. Returning <code>NotImplemented</code> for unrelated
+              types gives the other operand a chance to participate.
+            </p>
+
+            <p>
+              Defining equality can affect hashing behavior. Mutable value
+              objects are generally not safe dictionary keys unless the class
+              deliberately defines a consistent <code>__hash__</code> policy.
+            </p>
+          </section>
+
+          <section id="reflected-operators">
+            <p class="stack-section-number">10 — Reflected operations</p>
+            <h2>Support both <code>vector * 3</code> and <code>3 * vector</code></h2>
+
+            <pre class="python-code"><code>from numbers import Real
+
+
+class Vector:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __mul__(self, scalar):
+        if not isinstance(scalar, Real):
+            return NotImplemented
+
+        return Vector(self.x * scalar, self.y * scalar)
+
+    def __rmul__(self, scalar):
+        return self * scalar
+
+    def __str__(self):
+        return f"({self.x}, {self.y})"
+
+
+vector = Vector(2, 3)
+
+print(vector * 3)
+print(3 * vector)</code></pre>
+
+            <pre><code>(6, 9)
+(6, 9)</code></pre>
+
+            <p>
+              For <code>vector * 3</code>, Python uses
+              <code>Vector.__mul__</code>. For <code>3 * vector</code>, integer
+              multiplication cannot handle the vector, so Python can try
+              <code>Vector.__rmul__</code> as the reflected operation.
+            </p>
+          </section>
+
+          <section id="operator-guidelines">
+            <p class="stack-section-number">11 — Design rules</p>
+            <h2>Overload only when the meaning is natural</h2>
+
+            <p>Operator overloading works well for:</p>
+
+            <ul>
+              <li>mathematical objects such as vectors and matrices</li>
+              <li>custom containers participating in familiar protocols</li>
+              <li>domain values where comparison or combination is obvious</li>
+              <li>APIs that become clearer through standard Python syntax</li>
+            </ul>
+
+            <p>A good overload should:</p>
+
+            <ul>
+              <li>match the operator's conventional meaning</li>
+              <li>behave consistently with related operations</li>
+              <li>avoid surprising side effects</li>
+              <li>return <code>NotImplemented</code> for unsupported operands</li>
+            </ul>
+
+            <div class="callout">
+              If <code>+</code> naturally means add, concatenate, combine, or
+              merge, it may improve the API. If it performs an unrelated action,
+              give that action a descriptive method name.
+            </div>
+          </section>
+
+          <section id="practice">
+            <p class="stack-section-number">12 — Practice</p>
+            <h2>Build a <code>ComplexNumber</code> class</h2>
+
+            <p>Create a class that supports:</p>
+
+            <ul>
+              <li><code>+</code> for complex-number addition</li>
+              <li><code>*</code> for complex-number multiplication</li>
+              <li><code>==</code> for value comparison</li>
+              <li>readable text such as <code>3 + 4i</code></li>
+            </ul>
+
+            <h3>Solution</h3>
+
+            <pre class="python-code"><code>class ComplexNumber:
+    def __init__(self, real, imaginary):
+        self.real = real
+        self.imaginary = imaginary
+
+    def __add__(self, other):
+        if not isinstance(other, ComplexNumber):
+            return NotImplemented
+
+        return ComplexNumber(
+            self.real + other.real,
+            self.imaginary + other.imaginary,
+        )
+
+    def __mul__(self, other):
+        if not isinstance(other, ComplexNumber):
+            return NotImplemented
+
+        real = self.real * other.real - self.imaginary * other.imaginary
+        imaginary = self.real * other.imaginary + self.imaginary * other.real
+
+        return ComplexNumber(real, imaginary)
+
+    def __eq__(self, other):
+        if not isinstance(other, ComplexNumber):
+            return NotImplemented
+
+        return (
+            self.real == other.real
+            and self.imaginary == other.imaginary
+        )
+
+    def __str__(self):
+        sign = "+" if self.imaginary &gt;= 0 else "-"
+        return f"{self.real} {sign} {abs(self.imaginary)}i"
+
+
+number_1 = ComplexNumber(3, 4)
+number_2 = ComplexNumber(1, 2)
+
+print(number_1 + number_2)
+print(number_1 * number_2)
+print(number_1 == ComplexNumber(3, 4))</code></pre>
+
+            <pre><code>4 + 6i
+-5 + 10i
+True</code></pre>
+
+            <p>
+              <code>__add__</code> adds the real and imaginary components.
+              <code>__mul__</code> applies the complex multiplication formula.
+              <code>__eq__</code> compares logical values, and
+              <code>__str__</code> produces readable output.
+            </p>
+          </section>
+
+          <section id="summary">
+            <p class="stack-section-number">13 — Summary</p>
+            <h2>Two ways to extend behavior</h2>
+
+            <ul>
+              <li><code>singledispatch</code> selects a function by first-argument type.</li>
+              <li>Registered ancestor types can handle subclass instances.</li>
+              <li><code>singledispatchmethod</code> supports dispatch inside classes.</li>
+              <li>Special methods connect custom classes to Python syntax.</li>
+              <li>Reflected methods support reversed operand positions.</li>
+              <li><code>NotImplemented</code> enables cooperative operator dispatch.</li>
+            </ul>
+
+            <div class="callout">
+              <strong>Final idea:</strong> Single dispatch extends an external
+              operation by type. Operator overloading makes an object participate
+              naturally in Python's existing data-model protocols.
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

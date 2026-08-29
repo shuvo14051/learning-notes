@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Explore advanced Python encapsulation with property setters, deleters, invariants, property design, and __slots__."
+    />
+
+    <title>Advanced Properties, Invariants, and __slots__ | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="oop" data-post="advanced-properties-and-slots">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Object-Oriented Programming</p>
+
+          <h1>Advanced Properties, Invariants, and <code>__slots__</code></h1>
+
+          <p>
+            Control reading, assignment, and deletion; preserve valid object
+            state; and understand when fixed attribute storage is useful.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-09-02">September 2, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content stack-guide">
+          <p>
+            Encapsulation is not only about creating classes or hiding names. A
+            well-designed object controls the operations that can change its
+            state and keeps its rules true throughout its lifetime.
+          </p>
+
+          <p>Python supports this design through:</p>
+
+          <ul>
+            <li>property getters, setters, and deleters</li>
+            <li>validation and object invariants</li>
+            <li>clear choices between properties and methods</li>
+            <li><code>__slots__</code> for fixed instance storage</li>
+          </ul>
+
+          <section id="properties">
+            <p class="stack-section-number">01 — Managed attributes</p>
+            <h2>Properties hide logic behind attribute syntax</h2>
+
+            <p>A normal public attribute is simply stored state:</p>
+
+            <pre class="python-code"><code>class Person:
+    def __init__(self, age):
+        self.age = age
+
+
+person = Person(25)
+print(person.age)  # 25</code></pre>
+
+            <p>
+              If the class later needs validation or computation, changing
+              callers from <code>person.age</code> to
+              <code>person.get_age()</code> would alter the public interface.
+              A property adds behavior while preserving attribute syntax.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    def __init__(self, age):
+        self._age = age
+
+    @property
+    def age(self):
+        return self._age
+
+
+person = Person(30)
+print(person.age)  # 30</code></pre>
+
+            <div class="callout">
+              A property is descriptor-managed behavior presented through an
+              attribute-like interface.
+            </div>
+          </section>
+
+          <section id="setters">
+            <p class="stack-section-number">02 — Controlled assignment</p>
+            <h2>Property setters validate changes</h2>
+
+            <p>
+              A setter intercepts assignment to the public property name. The
+              class can validate the new value before changing its internal
+              state.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    def __init__(self, age):
+        self.age = age
+
+    @property
+    def age(self):
+        return self._age
+
+    @age.setter
+    def age(self, value):
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise TypeError("age must be an integer")
+
+        if value &lt; 0:
+            raise ValueError("age cannot be negative")
+
+        self._age = value</code></pre>
+
+            <p>
+              Notice that <code>__init__</code> assigns through
+              <code>self.age</code>, not directly through
+              <code>self._age</code>. Initial and later values therefore follow
+              the same rules.
+            </p>
+
+            <pre class="python-code"><code>person = Person(25)
+print(person.age)  # 25
+
+person.age = 40
+print(person.age)  # 40
+
+person.age = -10
+# ValueError: age cannot be negative</code></pre>
+
+            <p>
+              Writing <code>person.age = 40</code> invokes the method decorated
+              with <code>@age.setter</code>. The valid value is then stored in the
+              backing attribute <code>_age</code>.
+            </p>
+          </section>
+
+          <section id="deleters">
+            <p class="stack-section-number">03 — Controlled deletion</p>
+            <h2>Property deleters define what <code>del</code> means</h2>
+
+            <p>
+              A deleter runs when callers delete the public property. It can
+              remove storage, replace the value, release another resource, or
+              reject deletion entirely.
+            </p>
+
+            <pre class="python-code"><code>class User:
+    def __init__(self, password):
+        self._password = password
+
+    @property
+    def password(self):
+        return self._password
+
+    @password.deleter
+    def password(self):
+        print("Password removed")
+        self._password = None
+
+
+user = User("secret123")
+print(user.password)
+
+del user.password
+print(user.password)</code></pre>
+
+            <pre><code>secret123
+Password removed
+None</code></pre>
+
+            <p>
+              The statement <code>del user.password</code> invokes the method
+              decorated with <code>@password.deleter</code>. This example clears
+              the value rather than removing <code>_password</code> completely.
+            </p>
+
+            <h3>Deletion can be forbidden</h3>
+
+            <pre class="python-code"><code>class User:
+    def __init__(self, username):
+        self._username = username
+
+    @property
+    def username(self):
+        return self._username
+
+    @username.deleter
+    def username(self):
+        raise AttributeError("username cannot be deleted")</code></pre>
+
+            <div class="callout">
+              Add a deleter only when deletion has a meaningful domain behavior.
+              Most properties do not need one.
+            </div>
+          </section>
+
+          <section id="invariants">
+            <p class="stack-section-number">04 — Valid state</p>
+            <h2>Validation protects invariants</h2>
+
+            <p>
+              An <strong>invariant</strong> is a condition that must remain true
+              for an object to be considered valid. Examples include:
+            </p>
+
+            <ul>
+              <li>age must not be negative</li>
+              <li>an account balance must follow the account's overdraft rules</li>
+              <li>temperature cannot be below absolute zero</li>
+            </ul>
+
+            <p>
+              Every route that changes relevant state must preserve the
+              invariant—including object construction.
+            </p>
+
+            <pre class="python-code"><code>class BankAccount:
+    def __init__(self, balance=0):
+        self.balance = balance
+
+    @property
+    def balance(self):
+        return self._balance
+
+    @balance.setter
+    def balance(self, value):
+        if not isinstance(value, (int, float)):
+            raise TypeError("balance must be numeric")
+
+        if value &lt; 0:
+            raise ValueError("balance cannot be negative")
+
+        self._balance = value
+
+
+account = BankAccount(1000)
+account.balance = 2000
+
+print(account.balance)  # 2000
+
+account.balance = -500
+# ValueError: balance cannot be negative</code></pre>
+
+            <p>
+              This property prevents invalid assignment through
+              <code>balance</code>. In a richer banking model, deposits and
+              withdrawals would usually be methods because they represent
+              domain actions and may need additional rules or records.
+            </p>
+
+            <div class="callout">
+              Validation is complete only when every supported mutation path
+              preserves the same invariant.
+            </div>
+          </section>
+
+          <section id="properties-vs-methods">
+            <p class="stack-section-number">05 — API design</p>
+            <h2>Choose between a property and a method</h2>
+
+            <p>
+              A property should conceptually behave like information about an
+              object. A method should represent an action or potentially
+              substantial operation.
+            </p>
+
+            <div class="stack-table-wrap">
+              <table class="stack-table">
+                <thead>
+                  <tr>
+                    <th>Use a property when...</th>
+                    <th>Use a method when...</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>The result feels like data</td>
+                    <td>The operation feels like an action</td>
+                  </tr>
+                  <tr>
+                    <td>Access is inexpensive and unsurprising</td>
+                    <td>Work may be slow, fail, or have visible effects</td>
+                  </tr>
+                  <tr>
+                    <td>No call arguments are needed</td>
+                    <td>The operation needs arguments</td>
+                  </tr>
+                  <tr>
+                    <td>Examples: <code>area</code>, <code>age</code>, <code>balance</code></td>
+                    <td>Examples: <code>deposit()</code>, <code>save()</code>, <code>train()</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3>A derived value works naturally as a property</h3>
+
+            <pre class="python-code"><code>import math
+
+
+class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+
+    @property
+    def area(self):
+        return math.pi * self.radius**2
+
+
+circle = Circle(5)
+print(circle.area)</code></pre>
+
+            <pre><code>78.53981633974483</code></pre>
+
+            <p>
+              Area behaves like information about the circle, so
+              <code>circle.area</code> is intuitive.
+            </p>
+
+            <h3>A state-changing action works naturally as a method</h3>
+
+            <pre class="python-code"><code>class BankAccount:
+    def __init__(self, balance):
+        self.balance = balance
+
+    def deposit(self, amount):
+        if amount &lt;= 0:
+            raise ValueError("deposit must be positive")
+
+        self.balance += amount
+
+
+account = BankAccount(500)
+account.deposit(200)
+
+print(account.balance)  # 700</code></pre>
+
+            <div class="callout">
+              A useful shorthand is “properties are nouns; methods are verbs,”
+              but cost and side effects matter too. Expensive or surprising work
+              should be visible as a method call.
+            </div>
+          </section>
+
+          <section id="normal-storage">
+            <p class="stack-section-number">06 — Instance storage</p>
+            <h2>Normal objects usually have a dictionary</h2>
+
+            <pre class="python-code"><code>class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+
+person = Person("Alice", 30)
+print(person.__dict__)</code></pre>
+
+            <pre><code>{'name': 'Alice', 'age': 30}</code></pre>
+
+            <p>
+              An instance dictionary provides flexibility. New attributes can
+              be added at runtime:
+            </p>
+
+            <pre class="python-code"><code>person.height = 170
+print(person.__dict__)</code></pre>
+
+            <pre><code>{'name': 'Alice', 'age': 30, 'height': 170}</code></pre>
+
+            <p>
+              That flexibility has a memory cost because each instance needs
+              storage for its attribute mapping.
+            </p>
+          </section>
+
+          <section id="slots">
+            <p class="stack-section-number">07 — Fixed storage</p>
+            <h2>Use <code>__slots__</code> to declare instance attributes</h2>
+
+            <p>
+              <code>__slots__</code> lets a class declare a fixed set of instance
+              attribute names. Instances can store those attributes without a
+              normal per-instance <code>__dict__</code>, unless a dictionary is
+              provided by the class hierarchy or explicitly included in the
+              slots.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    __slots__ = ("name", "age")
+
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+
+person = Person("Bob", 40)
+
+print(person.name)  # Bob
+print(person.age)   # 40
+print(hasattr(person, "__dict__"))  # False</code></pre>
+
+            <p>An undeclared attribute cannot be added:</p>
+
+            <pre class="python-code"><code>person.height = 180
+# AttributeError: 'Person' object has no attribute 'height'</code></pre>
+
+            <p>
+              The restriction also catches misspelled attribute assignments that
+              would otherwise silently create a new instance attribute.
+            </p>
+          </section>
+
+          <section id="slots-properties">
+            <p class="stack-section-number">08 — Combine the tools</p>
+            <h2>Properties work with slotted storage</h2>
+
+            <p>
+              A slot can hold a property's backing value just as an instance
+              dictionary would.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    __slots__ = ("name", "_age")
+
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+    @property
+    def age(self):
+        return self._age
+
+    @age.setter
+    def age(self, value):
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise TypeError("age must be an integer")
+
+        if value &lt; 0:
+            raise ValueError("age cannot be negative")
+
+        self._age = value
+
+
+person = Person("Ahamed", 30)
+person.age = 31
+
+print(person.age)  # 31</code></pre>
+
+            <p>
+              The slot is named <code>_age</code> because that is where the
+              setter stores the validated value. The public name
+              <code>age</code> belongs to the property on the class.
+            </p>
+          </section>
+
+          <section id="slots-tradeoffs">
+            <p class="stack-section-number">09 — Tradeoffs</p>
+            <h2>When should you use <code>__slots__</code>?</h2>
+
+            <h3>Potential benefits</h3>
+
+            <ul>
+              <li>lower per-instance memory usage for many small objects</li>
+              <li>prevention of undeclared instance attributes</li>
+              <li>potential attribute-access improvements in some implementations</li>
+            </ul>
+
+            <h3>Costs and limitations</h3>
+
+            <ul>
+              <li>less flexibility for adding attributes dynamically</li>
+              <li>extra care around inheritance and multiple inheritance</li>
+              <li>weak references require a <code>__weakref__</code> slot when needed</li>
+              <li>some tools expect objects to provide <code>__dict__</code></li>
+            </ul>
+
+            <p>
+              <code>__slots__</code> is most valuable when measurement shows that
+              per-instance memory matters—for example, when creating a very large
+              number of small, structurally identical objects.
+            </p>
+
+            <div class="callout">
+              Treat <code>__slots__</code> as a storage and memory design tool,
+              not as a security feature or a default requirement for every
+              class.
+            </div>
+          </section>
+
+          <section id="summary">
+            <p class="stack-section-number">10 — Summary</p>
+            <h2>Key takeaways</h2>
+
+            <ul>
+              <li>A setter validates assignment to a property.</li>
+              <li>A deleter defines or rejects deletion behavior.</li>
+              <li>Every supported mutation path should preserve object invariants.</li>
+              <li>Properties represent data; methods usually represent actions.</li>
+              <li><code>__slots__</code> can reduce per-instance storage.</li>
+              <li>Slots trade dynamic flexibility for a fixed attribute layout.</li>
+            </ul>
+
+            <div class="callout">
+              <strong>Final idea:</strong> Encapsulation succeeds when an
+              object's interface makes valid operations natural and invalid
+              states difficult to create.
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

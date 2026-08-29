@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Compare instance, class, and static methods in Python, including binding, state access, factory methods, inheritance, and common mistakes."
+    />
+
+    <title>Instance, Class, and Static Methods in Python | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="oop" data-post="instance-class-static-methods">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Object-Oriented Programming</p>
+
+          <h1>Instance, Class, and Static Methods in Python</h1>
+
+          <p>
+            Understand what Python binds to each method type, which state it can
+            access naturally, and when each one is the right design choice.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-08-29">August 29, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content stack-guide">
+          <p>
+            The difference between instance, class, and static methods is mainly
+            about <strong>automatic binding</strong>. Python can automatically
+            provide an instance, provide a class, or provide nothing at all.
+          </p>
+
+          <div class="stack-table-wrap">
+            <table class="stack-table">
+              <thead>
+                <tr>
+                  <th>Method type</th>
+                  <th>Receives automatically</th>
+                  <th>Typical purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Instance method</td>
+                  <td><code>self</code>: an instance</td>
+                  <td>Read or change one object's state</td>
+                </tr>
+                <tr>
+                  <td>Class method</td>
+                  <td><code>cls</code>: a class</td>
+                  <td>Work with class state or alternative constructors</td>
+                </tr>
+                <tr>
+                  <td>Static method</td>
+                  <td>Nothing</td>
+                  <td>Related utility logic</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <section id="instance-methods">
+            <p class="stack-section-number">01 — Instance methods</p>
+            <h2>Work with a specific object</h2>
+
+            <p>
+              An instance method is a function that becomes bound to an object
+              during attribute access. Python passes that object as the first
+              argument, conventionally named <code>self</code>.
+            </p>
+
+            <pre class="python-code"><code>class User:
+    platform = "AI App"
+
+    def __init__(self, name):
+        self.name = name
+
+    def show_info(self):
+        return f"{self.name} uses {self.platform}"
+
+
+user = User("Ahamed")
+print(user.show_info())</code></pre>
+
+            <pre><code>Ahamed uses AI App</code></pre>
+
+            <p>When <code>user.show_info()</code> runs:</p>
+
+            <ol>
+              <li>The method is bound to <code>user</code>.</li>
+              <li>Python passes <code>user</code> as <code>self</code>.</li>
+              <li><code>self.name</code> is found on the instance.</li>
+              <li>
+                <code>self.platform</code> is not on the instance, so lookup
+                finds it on <code>User</code>.
+              </li>
+            </ol>
+
+            <div class="callout">
+              An instance method can naturally access instance state through
+              <code>self</code>. It can also read class attributes through the
+              normal attribute lookup process.
+            </div>
+
+            <h3>Assigning through <code>self</code> can create a shadow</h3>
+
+            <pre class="python-code"><code>class User:
+    platform = "AI App"
+
+    def __init__(self, name):
+        self.name = name
+
+    def change_platform(self):
+        self.platform = "ML App"
+
+
+user_1 = User("Ahamed")
+user_2 = User("John")
+
+user_1.change_platform()
+
+print(user_1.platform)  # ML App
+print(user_2.platform)  # AI App
+print(User.platform)    # AI App</code></pre>
+
+            <p>
+              The assignment creates <code>platform</code> on
+              <code>user_1</code>. It shadows the class attribute for that one
+              instance; it does not update <code>User.platform</code>.
+            </p>
+
+            <h3>Changing class state from an instance method</h3>
+
+            <p>
+              An instance method can reach its instance's class explicitly:
+            </p>
+
+            <pre class="python-code"><code>class User:
+    platform = "AI App"
+
+    def change_platform(self):
+        type(self).platform = "ML App"
+
+
+user_1 = User()
+user_2 = User()
+user_1.change_platform()
+
+print(user_1.platform)  # ML App
+print(user_2.platform)  # ML App
+print(User.platform)    # ML App</code></pre>
+
+            <p>
+              This updates the class of <code>self</code>. When changing shared
+              class state is the method's main responsibility, a class method
+              usually communicates that intention more clearly.
+            </p>
+
+            <h3>Calling through the class requires an instance</h3>
+
+            <pre class="python-code"><code>class User:
+    def show(self):
+        return "Hello"
+
+
+User.show()
+# TypeError: User.show() missing 1 required positional argument: 'self'</code></pre>
+
+            <p>
+              Access through the class does not bind a particular instance. You
+              can supply one manually with <code>User.show(user)</code>, or use
+              the normal bound call <code>user.show()</code>.
+            </p>
+          </section>
+
+          <section id="class-methods">
+            <p class="stack-section-number">02 — Class methods</p>
+            <h2>Work with the calling class</h2>
+
+            <p>
+              A class method is declared with <code>@classmethod</code>. Python
+              binds it to a class and supplies that class as the first argument,
+              conventionally named <code>cls</code>.
+            </p>
+
+            <pre class="python-code"><code>class AppConfig:
+    theme = "light"
+    version = "1.0"
+
+    def __init__(self, app_name):
+        self.app_name = app_name
+
+    @classmethod
+    def set_theme(cls, new_theme):
+        cls.theme = new_theme
+
+    @classmethod
+    def describe(cls):
+        return f"theme={cls.theme}, version={cls.version}"
+
+
+dashboard = AppConfig("Dashboard")
+analytics = AppConfig("Analytics")
+
+print(AppConfig.describe())
+AppConfig.set_theme("dark")
+print(AppConfig.describe())
+print(dashboard.theme, analytics.theme)</code></pre>
+
+            <pre><code>theme=light, version=1.0
+theme=dark, version=1.0
+dark dark</code></pre>
+
+            <p>
+              A class method can be accessed through the class or an instance.
+              In either case, <code>cls</code> refers to the class used for the
+              binding—not to a particular instance.
+            </p>
+
+            <h3>A class method has no specific instance</h3>
+
+            <pre class="python-code"><code>class AppConfig:
+    def __init__(self, app_name):
+        self.app_name = app_name
+
+    @classmethod
+    def wrong(cls):
+        return cls.app_name
+
+
+AppConfig.wrong()
+# AttributeError: type object 'AppConfig' has no attribute 'app_name'</code></pre>
+
+            <p>
+              <code>app_name</code> exists separately on each instance. The
+              class method receives only the class, so it does not know which
+              instance's <code>app_name</code> should be used.
+            </p>
+
+            <h3>Class methods as alternative constructors</h3>
+
+            <p>
+              A common class-method use is an alternative constructor: a method
+              that converts another representation into the arguments needed to
+              build an object.
+            </p>
+
+            <pre class="python-code"><code>class User:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+    @classmethod
+    def from_string(cls, data):
+        name, age = data.split(",")
+        return cls(name.strip(), int(age))
+
+
+user = User.from_string("Ahamed, 30")
+
+print(user.name, user.age)
+print(user.__dict__)</code></pre>
+
+            <pre><code>Ahamed 30
+{'name': 'Ahamed', 'age': 30}</code></pre>
+
+            <p>
+              The parsing logic stays next to the class, while
+              <code>cls(...)</code> performs the actual construction.
+            </p>
+
+            <h3>Why <code>cls</code> matters for inheritance</h3>
+
+            <pre class="python-code"><code>class Admin(User):
+    pass
+
+
+admin = Admin.from_string("John, 40")
+print(type(admin))</code></pre>
+
+            <pre><code>&lt;class '__main__.Admin'&gt;</code></pre>
+
+            <p>
+              Accessing <code>from_string</code> through <code>Admin</code> binds
+              <code>cls</code> to <code>Admin</code>. Therefore,
+              <code>return cls(...)</code> creates an <code>Admin</code> rather than
+              always creating a <code>User</code>.
+            </p>
+
+            <div class="callout">
+              Prefer <code>cls(...)</code> inside alternative constructors. It
+              preserves subclass behavior and avoids hard-coding the base class.
+            </div>
+          </section>
+
+          <section id="static-methods">
+            <p class="stack-section-number">03 — Static methods</p>
+            <h2>Keep related utility logic in the class namespace</h2>
+
+            <p>
+              A static method is declared with <code>@staticmethod</code>. It
+              receives no instance or class automatically. Its arguments behave
+              like the arguments of a regular function.
+            </p>
+
+            <pre class="python-code"><code>class MathUtils:
+    @staticmethod
+    def add(x, y):
+        return x + y
+
+
+print(MathUtils.add(3, 4))  # 7</code></pre>
+
+            <p>
+              Use a static method when a function conceptually belongs with a
+              class but does not need instance state or dynamic class access.
+            </p>
+
+            <h3>There is no automatic <code>self</code></h3>
+
+            <pre class="python-code"><code>class User:
+    def __init__(self, name):
+        self.name = name
+
+    @staticmethod
+    def wrong():
+        return self.name
+
+
+User.wrong()
+# NameError: name 'self' is not defined</code></pre>
+
+            <p>
+              No variable named <code>self</code> exists unless it is explicitly
+              declared and supplied as an argument.
+            </p>
+
+            <h3>Class access must be explicit</h3>
+
+            <pre class="python-code"><code>class User:
+    platform = "AI App"
+
+    @staticmethod
+    def show_platform():
+        return User.platform
+
+
+print(User.show_platform())  # AI App</code></pre>
+
+            <p>
+              This works because the function names <code>User</code> directly.
+              It is less flexible under inheritance than using
+              <code>cls.platform</code> in a class method.
+            </p>
+          </section>
+
+          <section id="choosing-method-type">
+            <p class="stack-section-number">04 — Choosing a method</p>
+            <h2>Ask what the operation needs</h2>
+
+            <div class="stack-table-wrap">
+              <table class="stack-table">
+                <thead>
+                  <tr>
+                    <th>If the operation needs...</th>
+                    <th>Choose...</th>
+                    <th>Reason</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>One object's state</td>
+                    <td>Instance method</td>
+                    <td>It receives <code>self</code></td>
+                  </tr>
+                  <tr>
+                    <td>Dynamic class state or construction</td>
+                    <td>Class method</td>
+                    <td>It receives <code>cls</code></td>
+                  </tr>
+                  <tr>
+                    <td>Neither instance nor class state</td>
+                    <td>Static method</td>
+                    <td>It receives nothing automatically</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="callout">
+              Start with the data the operation requires. The correct binding
+              choice usually follows naturally from that requirement.
+            </div>
+          </section>
+
+          <section id="complete-example">
+            <p class="stack-section-number">05 — Put it together</p>
+            <h2>Complete example</h2>
+
+            <pre class="python-code"><code>class User:
+    platform = "AI App"
+
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+    def describe(self):
+        return f"{self.name}, age {self.age}, uses {self.platform}"
+
+    @classmethod
+    def from_string(cls, data):
+        name, age = data.split(",")
+        return cls(name.strip(), int(age))
+
+    @classmethod
+    def set_platform(cls, platform):
+        cls.platform = platform
+
+    @staticmethod
+    def is_valid_age(age):
+        return isinstance(age, int) and age &gt;= 0
+
+
+user = User.from_string("Ahamed, 30")
+
+print(user.describe())
+print(User.is_valid_age(user.age))
+
+User.set_platform("ML App")
+print(user.describe())</code></pre>
+
+            <pre><code>Ahamed, age 30, uses AI App
+True
+Ahamed, age 30, uses ML App</code></pre>
+          </section>
+
+          <div class="callout">
+            <strong>Summary:</strong> Instance methods receive an object, class
+            methods receive the calling class, and static methods receive no
+            automatic first argument.
+          </div>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

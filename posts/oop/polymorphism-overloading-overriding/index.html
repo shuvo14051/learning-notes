@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Compare polymorphism, method overloading, and method overriding in Python, including flexible arguments, singledispatch, and typing.overload."
+    />
+
+    <title>Polymorphism: Overloading vs Overriding in Python | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="oop" data-post="polymorphism-overloading-overriding">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Object-Oriented Programming</p>
+
+          <h1>Polymorphism: Overloading vs Overriding in Python</h1>
+
+          <p>
+            Separate flexible input handling from inherited behavior and see how
+            Python expresses both forms of polymorphism.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-09-07">September 7, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content stack-guide">
+          <p>
+            Polymorphism means that one interface can support multiple forms of
+            behavior. Python embraces polymorphism, but it does not implement
+            traditional signature-based method overloading like Java or C++.
+          </p>
+
+          <div class="callout">
+            <strong>Clean mental model:</strong> A Python name normally refers to
+            one runtime function. That function can accept flexible inputs, or
+            different classes can provide different implementations of the same
+            operation.
+          </div>
+
+          <section id="polymorphism">
+            <p class="stack-section-number">01 — One interface, many forms</p>
+            <h2>What is polymorphism?</h2>
+
+            <p>
+              Polymorphism allows the same operation to work across different
+              values or objects. The caller uses a consistent interface while
+              the behavior varies appropriately.
+            </p>
+
+            <p>Common Python examples include:</p>
+
+            <ul>
+              <li><code>len()</code> working with strings, lists, tuples, and custom objects</li>
+              <li><code>+</code> adding numbers or concatenating sequences</li>
+              <li>different classes implementing the same method name</li>
+              <li>one function accepting several useful argument forms</li>
+            </ul>
+
+            <pre class="python-code"><code>print(len("Python"))       # 6
+print(len([10, 20, 30]))   # 3</code></pre>
+
+            <p>
+              The interface is <code>len(value)</code>. Each object's type
+              supplies the behavior that makes the operation meaningful.
+            </p>
+          </section>
+
+          <section id="traditional-overloading">
+            <p class="stack-section-number">02 — Traditional overloading</p>
+            <h2>What method overloading means elsewhere</h2>
+
+            <p>
+              In languages with signature-based overloading, a class can define
+              several methods with the same name but different parameter types
+              or counts:
+            </p>
+
+            <pre><code>add(a, b)
+add(a, b, c)
+add(a, b, c, d)</code></pre>
+
+            <p>
+              The language selects a matching implementation from the declared
+              signatures. Python class and module namespaces do not retain
+              several ordinary definitions under one name this way.
+            </p>
+          </section>
+
+          <section id="redefinition">
+            <p class="stack-section-number">03 — Name rebinding</p>
+            <h2>A later definition replaces the earlier binding</h2>
+
+            <pre class="python-code"><code>def greet(name):
+    return f"Hello {name}"
+
+
+def greet(name, message):
+    return f"{message} {name}"
+
+
+print(greet("Ahamed"))
+# TypeError: greet() missing 1 required positional argument: 'message'</code></pre>
+
+            <p>
+              The second <code>def</code> creates another function and rebinds the
+              name <code>greet</code>. The first function is no longer available
+              through that name.
+            </p>
+
+            <p>The same rule applies inside a class body:</p>
+
+            <pre class="python-code"><code>class Greeter:
+    def greet(self, name):
+        return f"Hello {name}"
+
+    def greet(self, name, message):
+        return f"{message} {name}"
+
+
+print(Greeter.__dict__["greet"])
+# Only the second function is stored</code></pre>
+
+            <div class="callout">
+              Python does not select between these definitions by signature. The
+              class namespace contains only the value assigned to
+              <code>greet</code> last.
+            </div>
+          </section>
+
+          <section id="default-arguments">
+            <p class="stack-section-number">04 — Flexible signatures</p>
+            <h2>Use default arguments for optional inputs</h2>
+
+            <pre class="python-code"><code>def greet(name, message="Hello"):
+    return f"{message} {name}"
+
+
+print(greet("Ahamed"))
+print(greet("Ahamed", "Hi"))</code></pre>
+
+            <pre><code>Hello Ahamed
+Hi Ahamed</code></pre>
+
+            <p>
+              One function supports both calls. If <code>message</code> is omitted,
+              Python uses the default. If the caller supplies it, that argument
+              replaces the default.
+            </p>
+
+            <p>
+              Defaults are the clearest choice when the forms differ only by a
+              small number of optional parameters.
+            </p>
+          </section>
+
+          <section id="args">
+            <p class="stack-section-number">05 — Variable positional input</p>
+            <h2>Use <code>*args</code> for any number of values</h2>
+
+            <pre class="python-code"><code>def add(*values):
+    total = 0
+
+    for value in values:
+        total += value
+
+    return total
+
+
+print(add(1, 2))
+print(add(1, 2, 3, 4))</code></pre>
+
+            <pre><code>3
+10</code></pre>
+
+            <p>
+              Python collects extra positional arguments into a tuple. One
+              implementation can therefore handle two, three, or many values.
+            </p>
+
+            <p>
+              For this particular example, the built-in <code>sum()</code> would
+              be simpler, but <code>*args</code> is useful when the function has
+              custom processing for a variable number of inputs.
+            </p>
+          </section>
+
+          <section id="kwargs">
+            <p class="stack-section-number">06 — Variable named input</p>
+            <h2>Use <code>**kwargs</code> for flexible named values</h2>
+
+            <pre class="python-code"><code>def describe(**fields):
+    for name, value in fields.items():
+        print(name, value)
+
+
+describe(name="Ahamed", age=25)</code></pre>
+
+            <pre><code>name Ahamed
+age 25</code></pre>
+
+            <p>
+              Extra keyword arguments become a dictionary. This can be useful
+              for extensible settings, adapters, and forwarding arguments, but
+              explicit named parameters are easier to document and validate when
+              the supported fields are known.
+            </p>
+          </section>
+
+          <section id="combined-signature">
+            <p class="stack-section-number">07 — Combined inputs</p>
+            <h2>Combine fixed and variable parameters carefully</h2>
+
+            <pre class="python-code"><code>def inspect_call(a, b=0, *args, **kwargs):
+    print(a, b)
+    print(args)
+    print(kwargs)
+
+
+inspect_call(1)
+inspect_call(1, 2, 3, 4, x=10, y=20)</code></pre>
+
+            <pre><code>1 0
+()
+{}
+
+1 2
+(3, 4)
+{'x': 10, 'y': 20}</code></pre>
+
+            <p>The important binding sequence in this signature is:</p>
+
+            <pre><code>required parameters → defaulted parameters → *args → **kwargs</code></pre>
+
+            <p>
+              Flexible signatures are powerful, but avoid using them when a
+              small explicit signature would communicate the API more clearly.
+            </p>
+          </section>
+
+          <section id="manual-dispatch">
+            <p class="stack-section-number">08 — Input-based branching</p>
+            <h2>One function can inspect its inputs</h2>
+
+            <pre class="python-code"><code>def combine(*values):
+    if all(isinstance(value, (int, float)) for value in values):
+        return sum(values)
+
+    if all(isinstance(value, str) for value in values):
+        return "".join(values)
+
+    raise TypeError("values must be all numeric or all strings")
+
+
+print(combine(5, 6))
+print(combine("Hi ", "Ahamed"))</code></pre>
+
+            <pre><code>11
+Hi Ahamed</code></pre>
+
+            <p>
+              This is still one function. It manually chooses behavior after
+              inspecting the runtime values; it is not traditional method
+              overloading.
+            </p>
+
+            <p>
+              Heavy chains of type checks can become difficult to extend. Often
+              polymorphic methods or a dispatch tool provide a cleaner design.
+            </p>
+          </section>
+
+          <section id="single-dispatch">
+            <p class="stack-section-number">09 — Runtime dispatch</p>
+            <h2>Use <code>singledispatch</code> for type-based functions</h2>
+
+            <p>
+              The standard library's <code>functools.singledispatch</code> can
+              select an implementation from the type of the first argument.
+            </p>
+
+            <pre class="python-code"><code>from functools import singledispatch
+
+
+@singledispatch
+def serialize(value):
+    raise TypeError(f"unsupported type: {type(value).__name__}")
+
+
+@serialize.register
+def _(value: int):
+    return str(value)
+
+
+@serialize.register
+def _(value: list):
+    return ",".join(str(item) for item in value)
+
+
+print(serialize(42))
+print(serialize([1, 2, 3]))</code></pre>
+
+            <pre><code>42
+1,2,3</code></pre>
+
+            <p>
+              This is genuine runtime generic-function dispatch provided by a
+              decorator, but it is different from retaining several normal
+              function definitions under one name. Dispatch considers only the
+              first argument's type.
+            </p>
+          </section>
+
+          <section id="typing-overload">
+            <p class="stack-section-number">10 — Static typing</p>
+            <h2><code>typing.overload</code> describes call signatures</h2>
+
+            <p>
+              Type checkers can understand several supported signatures through
+              <code>@overload</code>. The overload declarations do not provide
+              runtime implementations; one final function handles every call.
+            </p>
+
+            <pre class="python-code"><code>from typing import overload
+
+
+@overload
+def double(value: int) -&gt; int: ...
+
+
+@overload
+def double(value: str) -&gt; str: ...
+
+
+def double(value: int | str) -&gt; int | str:
+    return value * 2
+
+
+print(double(4))     # 8
+print(double("Hi"))  # HiHi</code></pre>
+
+            <div class="callout">
+              <code>@overload</code> helps static analysis and editor tooling. At
+              runtime, only the final implementation is called.
+            </div>
+          </section>
+
+          <section id="overriding">
+            <p class="stack-section-number">11 — Inherited behavior</p>
+            <h2>Method overriding changes behavior by object type</h2>
+
+            <p>
+              Overriding occurs when a child class defines its own version of an
+              inherited method.
+            </p>
+
+            <pre class="python-code"><code>class Animal:
+    def speak(self):
+        return "Some generic sound"
+
+
+class Dog(Animal):
+    def speak(self):
+        return "Bark"
+
+
+class Cat(Animal):
+    def speak(self):
+        return "Meow"
+
+
+animals = [Animal(), Dog(), Cat()]
+
+for animal in animals:
+    print(animal.speak())</code></pre>
+
+            <pre><code>Some generic sound
+Bark
+Meow</code></pre>
+
+            <p>
+              The call expression remains <code>animal.speak()</code>. The actual
+              object's class determines which method lookup finds. This is
+              runtime polymorphism through overriding.
+            </p>
+          </section>
+
+          <section id="comparison">
+            <p class="stack-section-number">12 — Comparison</p>
+            <h2>Overloading versus overriding</h2>
+
+            <div class="stack-table-wrap">
+              <table class="stack-table">
+                <thead>
+                  <tr>
+                    <th>Feature</th>
+                    <th>Traditional overloading</th>
+                    <th>Overriding</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Meaning</td>
+                    <td>Same name, different declared signatures</td>
+                    <td>Child replaces an inherited implementation</td>
+                  </tr>
+                  <tr>
+                    <td>Relationship</td>
+                    <td>Usually within one class or scope</td>
+                    <td>Between ancestor and child classes</td>
+                  </tr>
+                  <tr>
+                    <td>Normal Python support</td>
+                    <td>Not by repeated <code>def</code> declarations</td>
+                    <td>Directly supported</td>
+                  </tr>
+                  <tr>
+                    <td>Behavior selected by</td>
+                    <td>Argument signature in languages that support it</td>
+                    <td>Runtime method lookup on the object</td>
+                  </tr>
+                  <tr>
+                    <td>Python alternatives</td>
+                    <td>Defaults, <code>*args</code>, <code>**kwargs</code>, dispatch</td>
+                    <td>Define the method on a child class</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="side-by-side">
+            <p class="stack-section-number">13 — Side by side</p>
+            <h2>Different inputs versus different classes</h2>
+
+            <h3>Overloading-style input flexibility</h3>
+
+            <pre class="python-code"><code>def area(length, width=None):
+    if width is None:
+        return length**2
+
+    return length * width
+
+
+print(area(5))
+print(area(5, 3))</code></pre>
+
+            <pre><code>25
+15</code></pre>
+
+            <h3>Overriding through separate types</h3>
+
+            <pre class="python-code"><code>class Shape:
+    def area(self):
+        raise NotImplementedError
+
+
+class Square(Shape):
+    def __init__(self, side):
+        self.side = side
+
+    def area(self):
+        return self.side**2
+
+
+class Rectangle(Shape):
+    def __init__(self, length, width):
+        self.length = length
+        self.width = width
+
+    def area(self):
+        return self.length * self.width
+
+
+print(Square(5).area())
+print(Rectangle(5, 3).area())</code></pre>
+
+            <pre><code>25
+15</code></pre>
+
+            <p>
+              The first example branches on the call shape inside one function.
+              The second delegates the operation to the object's class.
+            </p>
+          </section>
+
+          <section id="summary">
+            <p class="stack-section-number">14 — Summary</p>
+            <h2>Key takeaways</h2>
+
+            <ul>
+              <li>Polymorphism means one interface can support many forms.</li>
+              <li>Repeated Python definitions rebind a name instead of creating overloads.</li>
+              <li>Defaults, <code>*args</code>, and <code>**kwargs</code> support flexible calls.</li>
+              <li><code>singledispatch</code> provides first-argument runtime dispatch.</li>
+              <li><code>typing.overload</code> describes signatures for type checkers.</li>
+              <li>Overriding provides object-dependent behavior through inheritance.</li>
+            </ul>
+
+            <div class="callout">
+              <strong>Final idea:</strong> Overloading is about accepting
+              different input forms. Overriding is about different object types
+              answering the same operation in their own way.
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

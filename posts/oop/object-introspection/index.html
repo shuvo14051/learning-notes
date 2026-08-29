@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Learn how to inspect and modify Python objects at runtime with __dict__, vars(), dir(), getattr(), and setattr()."
+    />
+
+    <title>Python Object Introspection | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="oop" data-post="object-introspection">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Object-Oriented Programming</p>
+
+          <h1>Python Object Introspection</h1>
+
+          <p>
+            Look inside Python objects at runtime using <code>__dict__</code>,
+            <code>vars()</code>, <code>dir()</code>, <code>getattr()</code>, and
+            <code>setattr()</code>.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-08-30">August 30, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content stack-guide">
+          <p>
+            Everything in Python is an object, and introspection lets a program
+            examine those objects while it is running. You can discover
+            attributes, read them by name, update them dynamically, and use that
+            behavior to build tools such as serializers, configuration loaders,
+            debuggers, and frameworks.
+          </p>
+
+          <div class="stack-table-wrap">
+            <table class="stack-table">
+              <thead>
+                <tr>
+                  <th>Tool</th>
+                  <th>Main question</th>
+                  <th>Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>__dict__</code></td>
+                  <td>What is stored directly here?</td>
+                  <td>Attribute mapping</td>
+                </tr>
+                <tr>
+                  <td><code>vars()</code></td>
+                  <td>Can I retrieve that namespace cleanly?</td>
+                  <td>Attribute or local mapping</td>
+                </tr>
+                <tr>
+                  <td><code>dir()</code></td>
+                  <td>Which attribute names are discoverable?</td>
+                  <td>Sorted list of names</td>
+                </tr>
+                <tr>
+                  <td><code>getattr()</code></td>
+                  <td>What is the value of this name?</td>
+                  <td>Attribute value</td>
+                </tr>
+                <tr>
+                  <td><code>setattr()</code></td>
+                  <td>Can I assign this name dynamically?</td>
+                  <td>Updates the object</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <section id="dict">
+            <p class="stack-section-number">01 — Direct storage</p>
+            <h2><code>__dict__</code>: where ordinary attributes live</h2>
+
+            <p>
+              Most user-defined objects store their instance attributes in a
+              dictionary exposed as <code>__dict__</code>.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+
+person = Person("Ahamed", 30)
+print(person.__dict__)</code></pre>
+
+            <pre><code>{'name': 'Ahamed', 'age': 30}</code></pre>
+
+            <p>
+              The keys are attribute names and the values are the objects stored
+              under those names. Directly changing this dictionary changes the
+              corresponding ordinary instance attribute:
+            </p>
+
+            <pre class="python-code"><code>person.__dict__["age"] = 31
+print(person.age)  # 31</code></pre>
+
+            <p>
+              Direct dictionary mutation is useful for understanding storage,
+              but normal application code should usually prefer
+              <code>setattr()</code>. It respects custom attribute-assignment
+              behavior and descriptors.
+            </p>
+
+            <h3>Classes have dictionaries too</h3>
+
+            <pre class="python-code"><code>print(Person.__dict__)</code></pre>
+
+            <p>
+              A class namespace contains functions, class attributes, and other
+              class-level definitions. <code>Person.__dict__</code> is exposed as
+              a read-only <code>mappingproxy</code>, so class attributes should
+              be changed through assignment or <code>setattr()</code>:
+            </p>
+
+            <pre class="python-code"><code>setattr(Person, "species", "human")
+print(Person.species)  # human</code></pre>
+
+            <div class="callout">
+              Instance attributes commonly live in
+              <code>instance.__dict__</code>. Class definitions live in the
+              namespace represented by <code>Class.__dict__</code>.
+            </div>
+
+            <h3>Not every object has a <code>__dict__</code></h3>
+
+            <p>
+              Built-in types and classes using <code>__slots__</code> may store
+              state without an instance dictionary.
+            </p>
+
+            <pre class="python-code"><code>class Point:
+    __slots__ = ("x", "y")
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+
+point = Point(2, 3)
+print(point.x)
+print(point.__dict__)  # AttributeError</code></pre>
+          </section>
+
+          <section id="vars">
+            <p class="stack-section-number">02 — Namespace helper</p>
+            <h2><code>vars()</code>: a clean interface to a namespace</h2>
+
+            <p>
+              With an object argument, <code>vars(object)</code> returns that
+              object's <code>__dict__</code> when one exists.
+            </p>
+
+            <pre class="python-code"><code>print(vars(person))
+print(vars(person) is person.__dict__)</code></pre>
+
+            <pre><code>{'name': 'Ahamed', 'age': 31}
+True</code></pre>
+
+            <p>
+              Because this is the actual dictionary rather than a copy, changes
+              made through the returned mapping affect the instance.
+            </p>
+
+            <pre class="python-code"><code>attributes = vars(person)
+attributes["name"] = "Sara"
+
+print(person.name)  # Sara</code></pre>
+
+            <p>
+              If an object does not provide <code>__dict__</code>, passing it to
+              <code>vars()</code> raises <code>TypeError</code>.
+            </p>
+
+            <h3><code>vars()</code> without an argument</h3>
+
+            <p>
+              Inside a function, calling <code>vars()</code> without an argument
+              returns the current local namespace mapping, like
+              <code>locals()</code>.
+            </p>
+
+            <pre class="python-code"><code>def inspect_locals():
+    language = "Python"
+    level = "OOP"
+    return vars()
+
+
+print(inspect_locals())
+# {'language': 'Python', 'level': 'OOP'}</code></pre>
+          </section>
+
+          <section id="dir">
+            <p class="stack-section-number">03 — Name discovery</p>
+            <h2><code>dir()</code>: what names are discoverable?</h2>
+
+            <p>
+              While <code>__dict__</code> shows one object's direct storage,
+              <code>dir()</code> returns a sorted list of attribute names
+              associated with an object.
+            </p>
+
+            <pre class="python-code"><code>names = dir(person)
+
+print("name" in names)       # True
+print("__class__" in names)  # True</code></pre>
+
+            <p>The result commonly includes:</p>
+
+            <ul>
+              <li>instance attribute names</li>
+              <li>class attribute and method names</li>
+              <li>inherited names</li>
+              <li>special methods such as <code>__str__</code></li>
+            </ul>
+
+            <p>
+              This makes <code>dir()</code> useful for interactive exploration,
+              debugging, and autocomplete-like tools.
+            </p>
+
+            <div class="callout">
+              <code>dir()</code> is a discovery aid, not a guaranteed complete
+              map of everything an object could return dynamically. A custom
+              <code>__dir__</code> can change the list, and
+              <code>__getattr__</code> may produce names that are not listed.
+            </div>
+          </section>
+
+          <section id="getattr">
+            <p class="stack-section-number">04 — Dynamic reading</p>
+            <h2><code>getattr()</code>: read an attribute by name</h2>
+
+            <p>Normal attribute syntax places the name directly in the code:</p>
+
+            <pre class="python-code"><code>print(person.name)</code></pre>
+
+            <p>
+              <code>getattr()</code> accepts the attribute name as a string:
+            </p>
+
+            <pre class="python-code"><code>print(getattr(person, "name"))</code></pre>
+
+            <p>
+              This matters when the name comes from data, configuration, or user
+              input rather than being known when the program is written.
+            </p>
+
+            <pre class="python-code"><code>field = "age"
+print(getattr(person, field))  # 31</code></pre>
+
+            <h3>Provide a default for a missing attribute</h3>
+
+            <pre class="python-code"><code>print(getattr(person, "height", None))  # None</code></pre>
+
+            <p>
+              Without a default, a missing name raises
+              <code>AttributeError</code>. With a default, <code>getattr()</code>
+              returns that value instead.
+            </p>
+
+            <pre class="python-code"><code>sentinel = object()
+value = getattr(person, "height", sentinel)
+
+if value is sentinel:
+    print("height is missing")</code></pre>
+
+            <p>
+              A unique sentinel distinguishes a missing attribute from an
+              attribute whose real value is <code>None</code>.
+            </p>
+
+            <div class="callout">
+              <code>getattr(obj, name)</code> uses normal attribute lookup. That
+              means properties, descriptors, inheritance, and
+              <code>__getattr__</code> still participate.
+            </div>
+          </section>
+
+          <section id="setattr">
+            <p class="stack-section-number">05 — Dynamic writing</p>
+            <h2><code>setattr()</code>: assign an attribute by name</h2>
+
+            <p>
+              <code>setattr()</code> is the dynamic equivalent of ordinary
+              attribute assignment.
+            </p>
+
+            <pre class="python-code"><code>setattr(person, "age", 40)
+print(person.age)  # 40</code></pre>
+
+            <p>The name and value can both come from variables:</p>
+
+            <pre class="python-code"><code>field = "age"
+value = 50
+
+setattr(person, field, value)
+print(person.age)  # 50</code></pre>
+
+            <p>
+              Just like <code>obj.name = value</code>, <code>setattr()</code> goes
+              through Python's attribute-assignment machinery. A property setter,
+              another data descriptor, or a custom <code>__setattr__</code> can
+              validate or reject the assignment.
+            </p>
+
+            <pre class="python-code"><code>class Account:
+    def __init__(self):
+        self._balance = 0
+
+    @property
+    def balance(self):
+        return self._balance
+
+    @balance.setter
+    def balance(self, value):
+        if value &lt; 0:
+            raise ValueError("balance cannot be negative")
+        self._balance = value
+
+
+account = Account()
+setattr(account, "balance", 100)
+print(account.balance)  # 100</code></pre>
+
+            <div class="callout">
+              Prefer <code>setattr()</code> over writing directly to
+              <code>__dict__</code> when you want normal assignment rules to run.
+            </div>
+          </section>
+
+          <section id="practical-example">
+            <p class="stack-section-number">06 — Put it together</p>
+            <h2>Load dynamic data into an object</h2>
+
+            <p>
+              A small configuration loader shows how introspection tools work
+              together:
+            </p>
+
+            <pre class="python-code"><code>class Settings:
+    allowed_fields = {"theme", "language", "page_size"}
+
+    def __init__(self):
+        self.theme = "light"
+        self.language = "en"
+        self.page_size = 20
+
+    def update(self, values):
+        for name, value in values.items():
+            if name not in self.allowed_fields:
+                raise ValueError(f"unknown setting: {name}")
+
+            setattr(self, name, value)
+
+    def as_dict(self):
+        return vars(self).copy()
+
+
+settings = Settings()
+settings.update({"theme": "dark", "page_size": 50})
+
+print(getattr(settings, "theme"))
+print(settings.as_dict())</code></pre>
+
+            <pre><code>dark
+{'theme': 'dark', 'language': 'en', 'page_size': 50}</code></pre>
+
+            <p>
+              Real systems should validate external field names and values
+              before assigning them. Dynamic access is powerful, but accepting
+              every arbitrary attribute can hide mistakes or expose internal
+              state.
+            </p>
+          </section>
+
+          <section id="summary">
+            <p class="stack-section-number">07 — Summary</p>
+            <h2>Choose the tool by the question</h2>
+
+            <ul>
+              <li>
+                Use <code>__dict__</code> to inspect direct namespace storage
+                when the object provides it.
+              </li>
+              <li>Use <code>vars()</code> for a convenient namespace mapping.</li>
+              <li>Use <code>dir()</code> to discover likely attribute names.</li>
+              <li>Use <code>getattr()</code> to read a name dynamically.</li>
+              <li>Use <code>setattr()</code> to assign a name dynamically.</li>
+            </ul>
+
+            <div class="callout">
+              Introspection is not a separate trick layered on top of Python's
+              object model. It exposes the same namespaces and lookup rules that
+              normal attribute syntax uses every day.
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

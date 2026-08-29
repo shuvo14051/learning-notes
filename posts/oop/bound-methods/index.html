@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Learn how Python turns a class function into a bound method and passes the instance automatically."
+    />
+
+    <title>What Is a Bound Method in Python? | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="oop" data-post="bound-methods">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Object-Oriented Programming</p>
+
+          <h1>What Is a Bound Method in Python?</h1>
+
+          <p>
+            See how a function stored on a class becomes connected to an
+            instance—and why Python passes <code>self</code> automatically.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-08-26">August 26, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <p>
+            In Python, an instance method begins as a function stored in a class.
+            When you access that function through an instance, Python produces a
+            bound method that remembers both the function and the instance.
+          </p>
+
+          <div class="callout">
+            <strong>Bound method = function + instance.</strong> Calling the
+            bound method passes its instance as the first argument
+            automatically.
+          </div>
+
+          <section id="plain-function">
+            <h2>1. Start with a plain function</h2>
+
+            <p>A regular function receives every argument explicitly.</p>
+
+            <pre class="python-code"><code>def greet(name):
+    print("Hi", name)
+
+
+greet("Ahamed")</code></pre>
+
+            <p>
+              Nothing is attached automatically here. The call supplies the
+              value for <code>name</code> directly.
+            </p>
+          </section>
+
+          <section id="function-in-class">
+            <h2>2. Put a function inside a class</h2>
+
+            <p>
+              A function defined in a class body is stored in the class
+              namespace.
+            </p>
+
+            <pre class="python-code"><code>class Person:
+    def greet(self):
+        print("Hi", self)
+
+
+print(Person.__dict__["greet"])</code></pre>
+
+            <p>The output looks similar to this:</p>
+
+            <pre><code>&lt;function Person.greet at 0x...&gt;</code></pre>
+
+            <p>
+              The value stored directly in <code>Person.__dict__</code> is a
+              function object. It has not been bound to an instance.
+            </p>
+          </section>
+
+          <section id="class-vs-instance">
+            <h2>3. Access it through the class and the instance</h2>
+
+            <pre class="python-code"><code>p = Person()
+
+print(Person.greet)
+print(p.greet)</code></pre>
+
+            <p>The output has two different forms:</p>
+
+            <pre><code>&lt;function Person.greet at 0x...&gt;
+&lt;bound method Person.greet of &lt;__main__.Person object at 0x...&gt;&gt;</code></pre>
+
+            <h3>Access through the class</h3>
+
+            <pre class="python-code"><code>Person.greet(p)</code></pre>
+
+            <p>
+              <code>Person.greet</code> gives you the function. You pass
+              <code>p</code> manually as its first argument.
+            </p>
+
+            <h3>Access through the instance</h3>
+
+            <pre class="python-code"><code>p.greet()</code></pre>
+
+            <p>
+              <code>p.greet</code> gives you a bound method. It already remembers
+              <code>p</code>, so Python supplies that object as the first
+              argument when the method is called.
+            </p>
+
+            <div class="callout">
+              Calling <code>p.greet()</code> has the same effect as calling
+              <code>Person.greet(p)</code> in this example.
+            </div>
+          </section>
+
+          <section id="meaning-of-bound">
+            <h2>4. What “bound” actually means</h2>
+
+            <p>A bound method remembers two important objects:</p>
+
+            <ul>
+              <li>the original function, available as <code>p.greet.__func__</code></li>
+              <li>the attached instance, available as <code>p.greet.__self__</code></li>
+            </ul>
+
+            <pre class="python-code"><code>method = p.greet
+
+print(method.__func__ is Person.greet)  # True
+print(method.__self__ is p)             # True</code></pre>
+
+            <p>
+              When <code>method()</code> runs, the method calls its stored
+              function with its stored instance as the first argument.
+            </p>
+          </section>
+
+          <section id="binding-time">
+            <h2>5. When does binding happen?</h2>
+
+            <p>
+              Binding does not happen when the class is defined or when the
+              instance is created. It happens when the method attribute is
+              accessed through the instance.
+            </p>
+
+            <p>For an ordinary instance method, the important sequence is:</p>
+
+            <ol>
+              <li>Python evaluates an attribute access such as <code>p.greet</code>.</li>
+              <li>It finds the function through the class.</li>
+              <li>
+                The function's descriptor behavior creates a method bound to
+                <code>p</code>.
+              </li>
+            </ol>
+
+            <p>
+              The descriptor protocol is the mechanism behind this automatic
+              transformation. It is also why different descriptors—such as
+              properties, class methods, and static methods—behave differently
+              during attribute access.
+            </p>
+          </section>
+
+          <section id="why-self">
+            <h2>6. Why is <code>self</code> required?</h2>
+
+            <pre class="python-code"><code>class A:
+    def hello():
+        print("hi")
+
+
+a = A()
+a.hello()</code></pre>
+
+            <p>
+              Accessing <code>a.hello</code> creates a method bound to
+              <code>a</code>. Calling it then passes <code>a</code> to
+              <code>hello</code>, but the function declares no parameter to
+              receive it. Python raises a <code>TypeError</code>.
+            </p>
+
+            <pre><code>TypeError: A.hello() takes 0 positional arguments but 1 was given</code></pre>
+
+            <div class="callout">
+              <code>self</code> is not a special keyword. It is the conventional
+              name for the first parameter that receives the bound instance.
+            </div>
+          </section>
+
+          <section id="new-method-object">
+            <h2>7. Each access can produce a new method object</h2>
+
+            <pre class="python-code"><code>print(p.greet is p.greet)  # Usually False</code></pre>
+
+            <p>
+              The two attribute accesses can produce two separate bound method
+              objects. They are temporary wrappers around the same function and
+              instance.
+            </p>
+
+            <p>
+              Comparing printed <code>id()</code> values in two separate
+              expressions can be misleading because a temporary method object
+              may be discarded and its memory reused. Store both methods first
+              if you want to demonstrate their identities clearly:
+            </p>
+
+            <pre class="python-code"><code>first = p.greet
+second = p.greet
+
+print(first is second)  # False
+print(first == second)  # True
+print(id(first))
+print(id(second))</code></pre>
+
+            <p>
+              Although the wrapper objects differ, bound methods compare equal
+              when they contain the same function and instance.
+            </p>
+          </section>
+
+          <section id="summary">
+            <h2>Summary</h2>
+
+            <ul>
+              <li><code>Person.__dict__["greet"]</code> is the stored function.</li>
+              <li><code>Person.greet</code> accesses that function through the class.</li>
+              <li><code>p.greet</code> produces a method bound to <code>p</code>.</li>
+              <li><code>p.greet()</code> behaves like <code>Person.greet(p)</code>.</li>
+              <li>Binding happens during instance attribute access.</li>
+            </ul>
+
+            <div class="callout">
+              Once bound methods make sense, instance methods, class methods,
+              static methods, and descriptors become much easier to reason
+              about.
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Learn how to insert nodes at the beginning and end of a singly linked list in Python."
+    />
+
+    <title>Singly Linked List Insert Operations | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="dsa" data-post="singly-linked-list-insertion">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Data Structures and Algorithms</p>
+
+          <h1>Singly Linked List Insert Operations</h1>
+
+          <p>
+            Learn how references move when a new node is inserted at the
+            beginning or at the end of a singly linked list.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-08-25">August 25, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content stack-guide">
+          <section id="overview">
+            <p class="stack-section-number">01 — Overview</p>
+            <h2>Two places to insert a node</h2>
+
+            <p>
+              A singly linked list stores a reference to its first node in
+              <code>self.head</code>. Each node stores a reference to the next
+              node. To insert a value, we create a new node and connect it to
+              the existing chain without losing any references.
+            </p>
+
+            <div class="stack-summary">
+              <strong>Beginning:</strong> connect the new node to the old head,
+              then make it the new head.<br />
+              <strong>End:</strong> follow the links to the last node, then
+              connect the new node after it.
+            </div>
+          </section>
+
+          <section id="insert-at-beginning">
+            <p class="stack-section-number">02 — Insert at the beginning</p>
+            <h2>Make the new node the head</h2>
+
+            <pre><code>def insert_at_beginning(self, data):
+    new_node = Node(data)
+
+    if self.head:
+        new_node.next = self.head
+
+    self.head = new_node
+    self.size += 1</code></pre>
+
+            <p>
+              Inserting at the beginning changes the head of the list. Suppose
+              the current list starts with A and we want to insert X.
+            </p>
+
+            <div class="stack-steps">
+              <div class="stack-step">
+                <h3><span>1</span> Create the new node</h3>
+                <p>
+                  <code>new_node = Node(data)</code> creates X. Its
+                  <code>next</code> reference is initially <code>None</code>.
+                </p>
+
+                <div class="stack-chain">
+                  <div class="stack-node"><b>X</b><small>next</small></div>
+                  <i>→</i>
+                  <span class="stack-none">None</span>
+                </div>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>2</span> Point to the old head</h3>
+                <p>
+                  If the list is not empty,
+                  <code>new_node.next = self.head</code> connects X to A. The
+                  existing list remains reachable through X.
+                </p>
+
+                <div class="stack-head">new_node ↓</div>
+                <div class="stack-chain">
+                  <div class="stack-node"><b>X</b><small>next</small></div>
+                  <i>→</i>
+                  <div class="stack-node"><b>A</b><small>next</small></div>
+                  <i>→</i>
+                  <div class="stack-node"><b>B</b><small>next</small></div>
+                  <i>→</i>
+                  <span class="stack-none">None</span>
+                </div>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>3</span> Move the head</h3>
+                <p>
+                  <code>self.head = new_node</code> makes X the first node. This
+                  line also works when the list is empty.
+                </p>
+
+                <div class="stack-head">head ↓</div>
+                <div class="stack-chain">
+                  <div class="stack-node"><b>X</b><small>next</small></div>
+                  <i>→</i>
+                  <div class="stack-node"><b>A</b><small>next</small></div>
+                  <i>→</i>
+                  <div class="stack-node"><b>B</b><small>next</small></div>
+                  <i>→</i>
+                  <span class="stack-none">None</span>
+                </div>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>4</span> Update the size</h3>
+                <p>
+                  <code>self.size += 1</code> records that the list now contains
+                  one more node.
+                </p>
+              </div>
+            </div>
+
+            <div class="callout">
+              <strong>Time complexity: O(1).</strong> Inserting at the beginning
+              takes the same amount of work no matter how many nodes are in the
+              list.
+            </div>
+          </section>
+
+          <section id="insert-at-end">
+            <p class="stack-section-number">03 — Insert at the end</p>
+            <h2>Find the last node and connect the new node</h2>
+
+            <pre><code>def insert_at_end(self, data):
+    new_node = Node(data)
+
+    if self.head:
+        current_node = self.head
+
+        while current_node.next:
+            current_node = current_node.next
+
+        current_node.next = new_node
+    else:
+        self.head = new_node
+
+    self.size += 1</code></pre>
+
+            <p>
+              Inserting at the end requires us to find the last node. Suppose
+              the list contains A → B and we want to insert X.
+            </p>
+
+            <div class="stack-steps">
+              <div class="stack-step">
+                <h3><span>1</span> Create the new node</h3>
+                <p>
+                  <code>new_node = Node(data)</code> creates X. Because X will be
+                  last, its <code>next</code> reference can stay
+                  <code>None</code>.
+                </p>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>2</span> Start at the head</h3>
+                <p>
+                  When the list is not empty,
+                  <code>current_node = self.head</code> gives us a temporary
+                  reference for walking through the list. The head itself does
+                  not move.
+                </p>
+
+                <div class="stack-head">head, current_node ↓</div>
+                <div class="stack-chain">
+                  <div class="stack-node"><b>A</b><small>next</small></div>
+                  <i>→</i>
+                  <div class="stack-node"><b>B</b><small>next</small></div>
+                  <i>→</i>
+                  <span class="stack-none">None</span>
+                </div>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>3</span> Walk to the last node</h3>
+                <p>
+                  The loop continues while
+                  <code>current_node.next</code> exists. It stops at B because
+                  B's <code>next</code> reference is <code>None</code>.
+                </p>
+
+                <pre><code>while current_node.next:
+    current_node = current_node.next</code></pre>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>4</span> Attach the new node</h3>
+                <p>
+                  <code>current_node.next = new_node</code> replaces the last
+                  node's <code>None</code> reference with a reference to X.
+                </p>
+
+                <div class="stack-head">head ↓</div>
+                <div class="stack-chain">
+                  <div class="stack-node"><b>A</b><small>next</small></div>
+                  <i>→</i>
+                  <div class="stack-node"><b>B</b><small>next</small></div>
+                  <i>→</i>
+                  <div class="stack-node"><b>X</b><small>next</small></div>
+                  <i>→</i>
+                  <span class="stack-none">None</span>
+                </div>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>5</span> Handle an empty list</h3>
+                <p>
+                  If <code>self.head</code> is <code>None</code>, there is no last
+                  node to find. The new node becomes the head instead. Finally,
+                  the method increases <code>self.size</code> in both cases.
+                </p>
+              </div>
+            </div>
+
+            <div class="callout">
+              <strong>Time complexity: O(n).</strong> Without a separate tail
+              reference, the method may need to visit every node to reach the
+              end of the list.
+            </div>
+          </section>
+
+          <section id="comparison">
+            <p class="stack-section-number">04 — Compare the operations</p>
+            <h2>What changes?</h2>
+
+            <div class="stack-table-wrap">
+              <table class="stack-table">
+                <thead>
+                  <tr>
+                    <th>Operation</th>
+                    <th>Main reference change</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Insert at beginning</td>
+                    <td><code>self.head = new_node</code></td>
+                    <td>O(1)</td>
+                  </tr>
+                  <tr>
+                    <td>Insert at end</td>
+                    <td><code>last_node.next = new_node</code></td>
+                    <td>O(n)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="complete-code">
+            <p class="stack-section-number">05 — Put it together</p>
+            <h2>Complete code</h2>
+
+            <pre><code>class Node:
+    def __init__(self, data):
+        self.data = data
+        self.next = None
+
+
+class LinkedList:
+    def __init__(self):
+        self.head = None
+        self.size = 0
+
+    def insert_at_beginning(self, data):
+        new_node = Node(data)
+
+        if self.head:
+            new_node.next = self.head
+
+        self.head = new_node
+        self.size += 1
+
+    def insert_at_end(self, data):
+        new_node = Node(data)
+
+        if self.head:
+            current_node = self.head
+
+            while current_node.next:
+                current_node = current_node.next
+
+            current_node.next = new_node
+        else:
+            self.head = new_node
+
+        self.size += 1
+
+
+linked_list = LinkedList()
+linked_list.insert_at_beginning("B")
+linked_list.insert_at_beginning("A")
+linked_list.insert_at_end("C")
+linked_list.insert_at_end("D")</code></pre>
+          </section>
+
+          <div class="callout">
+            <strong>Key idea:</strong> Insert at the beginning by changing the
+            head. Insert at the end by keeping the head in place and changing
+            the last node's <code>next</code> reference.
+          </div>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

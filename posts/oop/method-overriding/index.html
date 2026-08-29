@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Learn Python method overriding through full replacement, behavior extension with super(), polymorphism, and compatible subclass interfaces."
+    />
+
+    <title>Method Overriding in Python | Ahamed Learning Notes</title>
+
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="oop" data-post="method-overriding">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Object-Oriented Programming</p>
+
+          <h1>Method Overriding in Python</h1>
+
+          <p>
+            Learn how child classes replace, extend, and specialize inherited
+            behavior while preserving a common interface.
+          </p>
+
+          <div class="meta">
+            <time datetime="2026-09-04">September 4, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content stack-guide">
+          <p>
+            Once inheritance makes sense, method overriding is the next
+            essential step. Overriding lets a child class provide a more
+            specific implementation of behavior already defined by an ancestor.
+          </p>
+
+          <p>Three related ideas matter most:</p>
+
+          <ul>
+            <li><strong>replacement:</strong> use entirely different behavior</li>
+            <li><strong>extension:</strong> reuse inherited behavior and add to it</li>
+            <li><strong>specialization:</strong> preserve an interface with type-specific logic</li>
+          </ul>
+
+          <section id="replacement">
+            <p class="stack-section-number">01 — Replacement</p>
+            <h2>Replace an inherited method</h2>
+
+            <p>
+              A child overrides a method by defining a method with the same name
+              as an inherited method.
+            </p>
+
+            <pre class="python-code"><code>class Animal:
+    def speak(self):
+        return "generic sound"
+
+
+class Dog(Animal):
+    def speak(self):
+        return "bark"
+
+
+print(Dog().speak())  # bark</code></pre>
+
+            <p>
+              Lookup finds <code>speak</code> on <code>Dog</code> before reaching
+              <code>Animal</code>, so the child's implementation runs.
+            </p>
+
+            <pre><code>dog instance → Dog.speak → stop</code></pre>
+
+            <p>
+              The parent method has not been deleted or modified.
+              <code>Animal().speak()</code> still returns
+              <code>"generic sound"</code>.
+            </p>
+
+            <div class="callout">
+              Overriding changes which implementation lookup selects for a child
+              object. It does not overwrite the method stored on the parent.
+            </div>
+          </section>
+
+          <section id="when-to-override">
+            <p class="stack-section-number">02 — Design choice</p>
+            <h2>When should a child override?</h2>
+
+            <p>
+              Override when a general operation applies to every type in a
+              hierarchy, but a subtype needs its own implementation.
+            </p>
+
+            <p>A shape hierarchy is a classic example:</p>
+
+            <pre><code>       Shape.area()
+        /    |    \
+  Circle  Rectangle  Triangle</code></pre>
+
+            <p>
+              Every shape has an area, but each kind of shape uses a different
+              formula. The shared method name creates a consistent interface;
+              the overrides provide the specialized behavior.
+            </p>
+
+            <p>
+              A useful override should continue honoring the parent's contract:
+              callers using the parent interface should still be able to work
+              with the child object without unexpected requirements or results.
+            </p>
+          </section>
+
+          <section id="shape-example">
+            <p class="stack-section-number">03 — Specialization</p>
+            <h2>A shape hierarchy</h2>
+
+            <p>
+              The base method establishes the interface. Raising
+              <code>NotImplementedError</code> makes it clear that a concrete
+              subclass must provide the formula.
+            </p>
+
+            <pre class="python-code"><code>class Shape:
+    def area(self):
+        raise NotImplementedError("subclasses must implement area()")</code></pre>
+
+            <p>Each child supplies its own implementation:</p>
+
+            <pre class="python-code"><code>import math
+
+
+class Circle(Shape):
+    def __init__(self, radius):
+        self.radius = radius
+
+    def area(self):
+        return math.pi * self.radius**2
+
+
+class Rectangle(Shape):
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
+    def area(self):
+        return self.width * self.height
+
+
+class Triangle(Shape):
+    def __init__(self, base, height):
+        self.base = base
+        self.height = height
+
+    def area(self):
+        return 0.5 * self.base * self.height</code></pre>
+
+            <p>
+              All three subclasses support the same expression:
+              <code>shape.area()</code>. Only the implementation changes.
+            </p>
+          </section>
+
+          <section id="polymorphism">
+            <p class="stack-section-number">04 — Polymorphism</p>
+            <h2>One interface, many implementations</h2>
+
+            <p>
+              Because every shape provides <code>area()</code>, one loop can work
+              with all of them.
+            </p>
+
+            <pre class="python-code"><code>shapes = [
+    Circle(3),
+    Rectangle(4, 5),
+    Triangle(6, 3),
+]
+
+for shape in shapes:
+    print(round(shape.area(), 2))</code></pre>
+
+            <pre><code>28.27
+20
+9.0</code></pre>
+
+            <p>
+              Python evaluates <code>shape.area()</code> at runtime. The actual
+              object's class determines which implementation is selected. This
+              ability to use one interface with different types is
+              polymorphism.
+            </p>
+
+            <div class="callout">
+              The loop does not need a chain of <code>if</code> statements to
+              identify each shape. The objects supply the appropriate behavior.
+            </div>
+          </section>
+
+          <section id="extension">
+            <p class="stack-section-number">05 — Extension</p>
+            <h2>Reuse and extend inherited behavior</h2>
+
+            <p>
+              An override does not always need to discard the inherited method.
+              It can call the next implementation and add more behavior.
+            </p>
+
+            <pre class="python-code"><code>class Logger:
+    def log(self, message):
+        return f"log started: {message}"
+
+
+class FileLogger(Logger):
+    def log(self, message):
+        parent_result = super().log(message)
+        return parent_result + " -&gt; written to file"
+
+
+logger = FileLogger()
+print(logger.log("user signed in"))</code></pre>
+
+            <pre><code>log started: user signed in -&gt; written to file</code></pre>
+
+            <p>Execution has two parts:</p>
+
+            <ol>
+              <li>
+                <code>super().log(message)</code> invokes the next applicable
+                <code>log</code> implementation in the MRO.
+              </li>
+              <li>The child continues and adds its file-specific result.</li>
+            </ol>
+
+            <div class="callout">
+              <code>super()</code> means “continue searching after the current
+              class in the MRO.” In single inheritance that often reaches the
+              direct parent, but the MRO definition remains correct for multiple
+              inheritance too.
+            </div>
+          </section>
+
+          <section id="before-after">
+            <p class="stack-section-number">06 — Extension patterns</p>
+            <h2>Add behavior before or after <code>super()</code></h2>
+
+            <p>An override can wrap inherited behavior:</p>
+
+            <pre class="python-code"><code>class Service:
+    def process(self, data):
+        return data.strip()
+
+
+class AuditedService(Service):
+    def process(self, data):
+        print("processing started")
+
+        result = super().process(data)
+
+        print("processing finished")
+        return result
+
+
+service = AuditedService()
+print(service.process("  report  "))</code></pre>
+
+            <pre><code>processing started
+processing finished
+report</code></pre>
+
+            <p>
+              This structure is useful for logging, validation, metrics,
+              normalization, and other steps that surround reusable base
+              behavior.
+            </p>
+          </section>
+
+          <section id="compatible-interface">
+            <p class="stack-section-number">07 — Substitutability</p>
+            <h2>Keep the overriding interface compatible</h2>
+
+            <p>
+              Callers written for the parent should generally be able to use the
+              child without changing how they call the method.
+            </p>
+
+            <pre class="python-code"><code>class Formatter:
+    def format(self, text):
+        return text
+
+
+class UppercaseFormatter(Formatter):
+    def format(self, text):
+        return text.upper()</code></pre>
+
+            <p>
+              Both versions accept <code>text</code> and return formatted text.
+              The override specializes the result while preserving the contract.
+            </p>
+
+            <h3>A surprising override</h3>
+
+            <pre class="python-code"><code>class BrokenFormatter(Formatter):
+    def format(self, text, required_prefix):
+        return required_prefix + text</code></pre>
+
+            <p>
+              Code that safely calls <code>formatter.format(text)</code> for a
+              <code>Formatter</code> will fail when given
+              <code>BrokenFormatter</code>. Adding a new required argument breaks
+              the expected interface.
+            </p>
+
+            <div class="callout">
+              A good override preserves the expectations established by the
+              parent while changing the implementation appropriately.
+            </div>
+          </section>
+
+          <section id="common-mistakes">
+            <p class="stack-section-number">08 — Common mistakes</p>
+            <h2>Watch for these overriding problems</h2>
+
+            <h3>Forgetting to return the inherited result</h3>
+
+            <pre class="python-code"><code>class FileLogger(Logger):
+    def log(self, message):
+        super().log(message)
+        # No return statement: the result is None</code></pre>
+
+            <h3>Calling the class directly instead of using <code>super()</code></h3>
+
+            <pre class="python-code"><code>class FileLogger(Logger):
+    def log(self, message):
+        result = Logger.log(self, message)
+        return result + " -&gt; written to file"</code></pre>
+
+            <p>
+              This can work in simple inheritance, but it hard-codes
+              <code>Logger</code> and does not cooperate with a multiple-
+              inheritance MRO. Prefer <code>super()</code> for cooperative
+              overrides.
+            </p>
+
+            <h3>Accidentally changing the method name</h3>
+
+            <pre class="python-code"><code>class Dog(Animal):
+    def speaks(self):
+        return "bark"</code></pre>
+
+            <p>
+              <code>speaks</code> is a new method, not an override of
+              <code>speak</code>. Python does not use an <code>@override</code>
+              keyword to catch this automatically at runtime, though type
+              checkers can help detect mistakes.
+            </p>
+          </section>
+
+          <section id="mental-model">
+            <p class="stack-section-number">09 — Mental model</p>
+            <h2>Interface above, implementation below</h2>
+
+            <pre><code>        Shape.area()
+         /    |    \
+Circle.area() | Rectangle.area()
+              |
+        Triangle.area()</code></pre>
+
+            <p>
+              The parent establishes the shared operation. Each concrete child
+              supplies behavior appropriate to its own state. Callers depend on
+              the stable interface instead of the formula inside each class.
+            </p>
+          </section>
+
+          <section id="summary">
+            <p class="stack-section-number">10 — Summary</p>
+            <h2>Key takeaways</h2>
+
+            <ul>
+              <li>A child overrides a method by defining the same method name.</li>
+              <li>Lookup selects the first applicable definition in the MRO.</li>
+              <li>An override can fully replace or extend inherited behavior.</li>
+              <li><code>super()</code> continues lookup through the MRO.</li>
+              <li>A shared interface enables polymorphic code.</li>
+              <li>Overrides should preserve the parent's usable contract.</li>
+            </ul>
+
+            <div class="callout">
+              <strong>Final idea:</strong> Overriding lets specialized objects
+              answer the same request in different, type-appropriate ways.
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>
