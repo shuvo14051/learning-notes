@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Learn how to insert a node at a given index in a singly linked list without losing references."
+    />
+    <title>Insert at a Given Index | Ahamed Learning Notes</title>
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="dsa" data-post="insert-at-given-index">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Data Structures and Algorithms</p>
+          <h1>Insert at a Given Index</h1>
+          <p>
+            Insert a new node between two existing nodes without losing the
+            remainder of a singly linked list.
+          </p>
+          <div class="meta">
+            <time datetime="2026-08-30">August 30, 2026</time>
+            <span>•</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content stack-guide">
+          <section id="overview">
+            <p class="stack-section-number">01 — Overview</p>
+            <h2>Insert the new node between two existing nodes</h2>
+
+            <pre><code>def insert_at_index(self, index, data):
+    if index &lt; 0 or index &gt; self.size:
+        raise IndexError("Index out of range")
+
+    if index == 0:
+        self.insert_at_beginning(data)
+        return
+
+    new_node = Node(data)
+    current_node = self.head
+
+    for _ in range(index - 1):
+        current_node = current_node.next
+
+    new_node.next = current_node.next
+    current_node.next = new_node
+    self.size += 1</code></pre>
+
+            <p>
+              Inserting at a given index requires finding the node immediately
+              before the insertion position. Suppose the list contains
+              <code>A → B → C</code>, and we want to insert <code>X</code> at
+              index <code>2</code>.
+            </p>
+
+            <div class="stack-head">index 0 &nbsp;&nbsp; index 1 &nbsp;&nbsp; index 2</div>
+            <div class="stack-chain">
+              <div class="stack-node"><b>A</b><small>next</small></div><i>→</i>
+              <div class="stack-node"><b>B</b><small>next</small></div><i>→</i>
+              <div class="stack-node"><b>C</b><small>next</small></div><i>→</i>
+              <span class="stack-none">None</span>
+            </div>
+
+            <p>After insertion, <code>X</code> occupies index 2 and <code>C</code> moves to index 3.</p>
+
+            <div class="stack-head">index 0 &nbsp; index 1 &nbsp; index 2 &nbsp; index 3</div>
+            <div class="stack-chain">
+              <div class="stack-node"><b>A</b><small>next</small></div><i>→</i>
+              <div class="stack-node"><b>B</b><small>next</small></div><i>→</i>
+              <div class="stack-node"><b>X</b><small>next</small></div><i>→</i>
+              <div class="stack-node"><b>C</b><small>next</small></div><i>→</i>
+              <span class="stack-none">None</span>
+            </div>
+          </section>
+
+          <section id="steps">
+            <p class="stack-section-number">02 — Follow the references</p>
+            <h2>Eight steps to insert safely</h2>
+
+            <div class="stack-steps">
+              <div class="stack-step">
+                <h3><span>1</span> Validate the index</h3>
+                <pre><code>if index &lt; 0 or index &gt; self.size:
+    raise IndexError("Index out of range")</code></pre>
+                <p>
+                  A list of size 3 accepts insertion indices 0 through 3. An
+                  index below 0 or above 3 is invalid.
+                </p>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>2</span> Handle index zero</h3>
+                <pre><code>if index == 0:
+    self.insert_at_beginning(data)
+    return</code></pre>
+                <p>
+                  Index 0 changes the head. Reusing the existing method also
+                  avoids increasing <code>self.size</code> twice.
+                </p>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>3</span> Create the new node</h3>
+                <pre><code>new_node = Node(data)</code></pre>
+                <p>
+                  This creates <code>X</code>. Its <code>next</code> reference is
+                  initially <code>None</code>, so it is not connected yet.
+                </p>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>4</span> Start at the head</h3>
+                <pre><code>current_node = self.head</code></pre>
+                <p>
+                  <code>current_node</code> is a temporary traversal reference.
+                  The actual head does not move.
+                </p>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>5</span> Find the previous node</h3>
+                <pre><code>for _ in range(index - 1):
+    current_node = current_node.next</code></pre>
+                <p>
+                  For index 2, the loop runs once and moves from A to B—the
+                  node immediately before the insertion position.
+                </p>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>6</span> Point X to C</h3>
+                <pre><code>new_node.next = current_node.next</code></pre>
+                <p>
+                  Since <code>current_node</code> is B, this makes X point to C.
+                  B still points to C, so no part of the list is lost.
+                </p>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>7</span> Point B to X</h3>
+                <pre><code>current_node.next = new_node</code></pre>
+                <p>
+                  B now points to X instead of directly to C. The new node is
+                  part of the chain: <code>A → B → X → C</code>.
+                </p>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>8</span> Update the size</h3>
+                <pre><code>self.size += 1</code></pre>
+                <p>The list previously contained three nodes and now contains four.</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="valid-indices">
+            <p class="stack-section-number">03 — Valid positions</p>
+            <h2>Every valid insertion index</h2>
+            <div class="stack-table-wrap">
+              <table class="stack-table">
+                <thead>
+                  <tr><th>Index</th><th>Result</th><th>What changes</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>0</td><td><code>X → A → B → C</code></td><td>The head</td></tr>
+                  <tr><td>1</td><td><code>A → X → B → C</code></td><td>A.next</td></tr>
+                  <tr><td>2</td><td><code>A → B → X → C</code></td><td>B.next</td></tr>
+                  <tr><td>3</td><td><code>A → B → C → X</code></td><td>C.next</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="connection-order">
+            <p class="stack-section-number">04 — Connection order</p>
+            <h2>Why the two assignments must stay in order</h2>
+            <pre><code>new_node.next = current_node.next
+current_node.next = new_node</code></pre>
+            <p>
+              First connect X to C. Then connect B to X. If B's
+              <code>next</code> reference is replaced first, the reference to C
+              can be lost and the new node may even point to itself.
+            </p>
+            <div class="stack-summary">
+              <strong>Before:</strong> B → C<br />
+              <strong>First connection:</strong> X → C<br />
+              <strong>Second connection:</strong> B → X → C
+            </div>
+          </section>
+
+          <section id="complexity">
+            <p class="stack-section-number">05 — Complexity</p>
+            <h2>The traversal determines the running time</h2>
+            <div class="callout">
+              <strong>Time complexity: O(n).</strong> The method may traverse
+              the list to find the node before the requested index. Once that
+              node is found, the two reference changes take O(1) time.
+            </div>
+          </section>
+
+          <div class="callout">
+            <strong>Key idea:</strong> Preserve the next node first. Connect the
+            new node forward, and only then connect the previous node to it.
+          </div>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>Related notes are selected from the same topic first, then from connected areas.</p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

@@ -1,7 +1,20 @@
 window.BLOG_POSTS = window.BLOG_POSTS || [];
 window.BLOG_POSTS.push(
   {
-    title: "Singly Linked List Insert Operations",
+    title: "Singly Linked List (Part-3) - Insert at a Given Index",
+    slug: "insert-at-given-index",
+    topic: "DSA",
+    topicSlug: "dsa",
+    date: "August 30, 2026",
+    description:
+      "Learn how to insert a node at a specific index without losing linked-list references.",
+    featured: true,
+    color: "coral",
+    symbol: "i",
+    path: "posts/dsa/insert-at-given-index/",
+  },
+  {
+    title: "Singly Linked List (Part-2) - Insert Operations",
     slug: "singly-linked-list-insertion",
     topic: "DSA",
     topicSlug: "dsa",
