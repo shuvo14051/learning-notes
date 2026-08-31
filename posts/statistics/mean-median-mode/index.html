@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Learn how mean, median, and mode describe the center of a dataset, when to use each measure, and how outliers affect them."
+    />
+    <title>Mean, Median, and Mode | Ahamed Learning Notes</title>
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+  <body data-topic="statistics" data-post="mean-median-mode">
+    <div data-header></div>
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Statistics</p>
+          <h1>Mean, Median, and Mode</h1>
+          <p>
+            Three ways to describe the center of a dataset&mdash;and how to
+            choose the one that represents your data honestly.
+          </p>
+          <div class="meta">
+            <time datetime="2026-08-30">August 30, 2026</time><span>&bull;</span
+            ><span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <p>
+            Mean, median, and mode describe the center of data, but each answers
+            a different question: What is the average? What is the middle? What
+            is most common?
+          </p>
+
+          <h2>Lesson 1: Mean</h2>
+          <h3>What is the mean?</h3>
+          <p>
+            The <strong>mean</strong>, or average, is a value that represents
+            the center of a dataset. Imagine the values as weights placed on a
+            seesaw: the mean is the point where the seesaw balances.
+          </p>
+          <p>Suppose the dataset is:</p>
+          <pre><code>2, 4, 6, 8, 10</code></pre>
+          <div class="math">Mean = (2 + 4 + 6 + 8 + 10) / 5 = 6</div>
+          <p>Therefore, the average is <strong>6</strong>.</p>
+
+          <h3>Formula</h3>
+          <div class="math" aria-label="mu equals one over n times the sum from i equals one to n of x sub i">
+            <span>&mu; =</span>
+            <span class="math-fraction">
+              <span>1</span>
+              <span>n</span>
+            </span>
+            <span class="math-sum">
+              <span class="math-limit">n</span>
+              <span class="math-symbol">&sum;</span>
+              <span class="math-limit">i = 1</span>
+            </span>
+            <span>x<sub>i</sub></span>
+          </div>
+          <ul>
+            <li><code>x<sub>i</sub></code> is the i-th observation.</li>
+            <li><code>n</code> is the total number of observations.</li>
+            <li><code>&sum;</code> means add all the observations together.</li>
+          </ul>
+
+          <h3>Worked example</h3>
+          <p>Consider the scores <code>90, 80, 70, 60, 100</code>.</p>
+          <pre><code>Sum = 90 + 80 + 70 + 60 + 100 = 400
+Number of scores = 5
+Mean = 400 / 5 = 80</code></pre>
+
+          <h3>Mean in Python</h3>
+          <pre><code>import numpy as np
+
+scores = np.array([90, 80, 70, 60, 100])
+print(np.mean(scores))</code></pre>
+          <p>Output:</p>
+          <pre><code>80.0</code></pre>
+
+          <h3>Why is the mean useful?</h3>
+          <p>Suppose two hospitals have patients with these ages:</p>
+          <pre><code>Hospital A: 20, 21, 22, 23, 24
+Mean: 22
+
+Hospital B: 10, 20, 30, 40, 100
+Mean: 40</code></pre>
+          <p>
+            Hospital B has the higher average age, but its single 100-year-old
+            patient has a large effect. This demonstrates that the mean is
+            <strong>sensitive to extreme values, or outliers</strong>.
+          </p>
+
+          <h3>When should you use the mean?</h3>
+          <p>Use the mean when:</p>
+          <ul>
+            <li>The data are approximately symmetric.</li>
+            <li>There are no major outliers.</li>
+            <li>You want to summarize all observations with one number.</li>
+          </ul>
+
+          <h3>Mean in machine learning</h3>
+          <p>You will encounter the mean throughout machine learning:</p>
+          <ul>
+            <li><strong>Feature centering:</strong> <code>x' = x - mean</code></li>
+            <li><strong>Standardization:</strong> <code>(x - &mu;) / &sigma;</code></li>
+            <li><strong>Mean Squared Error:</strong> <code>(1 / n) &sum; (y - &#375;)<sup>2</sup></code></li>
+            <li><strong>Gradient descent:</strong> averaging gradients over a batch.</li>
+            <li><strong>Batch Normalization:</strong> using the batch mean.</li>
+          </ul>
+
+          <h3>Mean exercise</h3>
+          <p>Calculate the mean of <code>12, 15, 18, 21, 24</code> by hand.</p>
+          <details>
+            <summary>Show the answer</summary>
+            <pre><code>12 + 15 + 18 + 21 + 24 = 90
+90 / 5 = 18</code></pre>
+            <p>The mean is <strong>18</strong>.</p>
+          </details>
+
+          <h2>Lesson 2: Median</h2>
+          <h3>What is the median?</h3>
+          <p>
+            The <strong>median</strong> is the middle value when the data are
+            arranged in increasing or decreasing order. It divides the data
+            into two equal halves: 50% of values are below it and 50% are above
+            it. Unlike the mean, it is not affected much by outliers.
+          </p>
+
+          <h3>Odd number of observations</h3>
+          <pre><code>3, 5, [7], 9, 12</code></pre>
+          <p>There are five values, so the middle value and median is <strong>7</strong>.</p>
+
+          <h3>Even number of observations</h3>
+          <pre><code>3, 5, 7, 9, 12, 15
+      ^  ^</code></pre>
+          <p>There is no single middle value, so average the middle two:</p>
+          <div class="math">Median = (7 + 9) / 2 = 8</div>
+
+          <h3>Mean vs. median: salaries</h3>
+          <pre><code>$30k, $35k, $40k, $45k, $500k</code></pre>
+          <div class="math">Mean = (30 + 35 + 40 + 45 + 500) / 5 = $130k</div>
+          <p>
+            Most people do not earn close to $130k. After sorting the data, the
+            middle salary is $40k, so the <strong>median is $40k</strong>. It
+            better represents the typical person.
+          </p>
+
+          <h3>Why does the median resist outliers?</h3>
+          <p>Start with <code>20, 25, 30, 35, 40</code>:</p>
+          <pre><code>Mean = 150 / 5 = 30
+Median = 30</code></pre>
+          <p>Now add the extreme value <code>1,000,000</code>:</p>
+          <pre><code>20, 25, 30, 35, 40, 1,000,000
+Mean = 1,000,150 / 6 = 166,691.67
+Median = (30 + 35) / 2 = 32.5</code></pre>
+          <p>
+            The mean changes dramatically, while the median changes only from
+            30 to 32.5.
+          </p>
+
+          <h3>Median in machine learning</h3>
+          <h4>1. Data preprocessing</h4>
+          <p>Consider these house prices:</p>
+          <pre><code>$100k, $150k, $200k, $250k, $50 million</code></pre>
+          <p>
+            A mean near $10 million would distort the typical price. The
+            median, <strong>$200k</strong>, is more representative.
+          </p>
+
+          <h4>2. Missing-value imputation</h4>
+          <pre><code>Age: 21, 25, ?, 30, 35</code></pre>
+          <div class="math">Mean = (21 + 25 + 30 + 35) / 4 = 27.75</div>
+          <div class="math">Median = (25 + 30) / 2 = 27.5</div>
+          <p>Median imputation is often preferred when the feature has outliers.</p>
+
+          <h4>3. Computer vision</h4>
+          <p>A median filter can remove noise from images. Consider a pixel neighborhood:</p>
+          <pre><code>10  12  11
+13 255  12
+11  10  13</code></pre>
+          <p>
+            Sorted, the values are <code>10, 10, 11, 11, 12, 12, 13, 13, 255</code>.
+            The median is 12, so the noisy pixel value 255 can be replaced by 12.
+          </p>
+
+          <h3>Median in Python</h3>
+          <pre><code>import numpy as np
+
+odd_data = np.array([3, 5, 7, 9, 12])
+print(np.median(odd_data))   # 7.0
+
+even_data = np.array([3, 5, 7, 9, 12, 15])
+print(np.median(even_data))  # 8.0</code></pre>
+
+          <h3>Mean vs. median summary</h3>
+          <table>
+            <thead><tr><th>Property</th><th>Mean</th><th>Median</th></tr></thead>
+            <tbody>
+              <tr><td>Uses all values</td><td>Yes</td><td>No</td></tr>
+              <tr><td>Sensitive to outliers</td><td>Yes</td><td>No</td></tr>
+              <tr><td>Good for symmetric data</td><td>Yes</td><td>Yes</td></tr>
+              <tr><td>Good for skewed data</td><td>No</td><td>Yes</td></tr>
+              <tr><td>Used in ML preprocessing</td><td>Very common</td><td>Very common</td></tr>
+            </tbody>
+          </table>
+          <div class="callout">
+            <strong>Important rule:</strong> for a symmetric distribution, the
+            mean is usually better. For a skewed distribution, the median is
+            usually better.
+          </div>
+
+          <h3>Mean and median exercise</h3>
+          <p>Find both measures for <code>5, 8, 10, 12, 15, 100</code>.</p>
+          <details>
+            <summary>Show the answer</summary>
+            <div class="math">Mean = (5 + 8 + 10 + 12 + 15 + 100) / 6 = 25</div>
+            <div class="math">Median = (10 + 12) / 2 = 11</div>
+            <p>
+              The large difference between 25 and 11 tells us the dataset is
+              skewed by the outlier 100.
+            </p>
+          </details>
+
+          <h2>Lesson 3: Mode</h2>
+          <h3>What is the mode?</h3>
+          <p>
+            The <strong>mode</strong> is the value that appears most frequently.
+            Unlike mean and median, it does not require numerical data and can
+            describe categories or labels.
+          </p>
+          <p>For <code>2, 3, 3, 5, 7, 3, 8</code>:</p>
+          <table>
+            <thead><tr><th>Value</th><th>Frequency</th></tr></thead>
+            <tbody>
+              <tr><td>2</td><td>1</td></tr><tr><td>3</td><td>3</td></tr>
+              <tr><td>5</td><td>1</td></tr><tr><td>7</td><td>1</td></tr>
+              <tr><td>8</td><td>1</td></tr>
+            </tbody>
+          </table>
+          <p>The value 3 appears most often, so the mode is <strong>3</strong>.</p>
+
+          <h3>Types of mode</h3>
+          <ul>
+            <li><strong>Unimodal:</strong> <code>1, 2, 2, 3, 4</code> has one mode, 2.</li>
+            <li><strong>Bimodal:</strong> <code>1, 2, 2, 3, 4, 4</code> has two modes, 2 and 4.</li>
+            <li><strong>Multimodal:</strong> <code>1, 1, 2, 2, 3, 3, 4</code> has three modes, 1, 2, and 3.</li>
+          </ul>
+
+          <h3>Mode with categorical data</h3>
+          <p>Favorite programming languages:</p>
+          <pre><code>Python, Java, Python, C++, Python, Java</code></pre>
+          <table>
+            <thead><tr><th>Language</th><th>Count</th></tr></thead>
+            <tbody><tr><td>Python</td><td>3</td></tr><tr><td>Java</td><td>2</td></tr><tr><td>C++</td><td>1</td></tr></tbody>
+          </table>
+          <p>
+            The mode is <strong>Python</strong>. Mean and median do not make
+            sense because these categories have no numerical meaning.
+          </p>
+
+          <h3>Mean vs. median vs. mode</h3>
+          <p>For <code>1, 2, 2, 3, 10</code>:</p>
+          <div class="math">Mean = (1 + 2 + 2 + 3 + 10) / 5 = 3.6</div>
+          <p>The ordered middle value is 2, and the most frequent value is also 2.</p>
+          <table>
+            <thead><tr><th>Measure</th><th>Meaning</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr><td>Mean</td><td>Average value</td><td>3.6</td></tr>
+              <tr><td>Median</td><td>Middle value</td><td>2</td></tr>
+              <tr><td>Mode</td><td>Most common value</td><td>2</td></tr>
+            </tbody>
+          </table>
+
+          <h3>When should you use the mode?</h3>
+          <ul>
+            <li><strong>Categorical data:</strong> the most common color, country, class label, or disease type.</li>
+            <li><strong>Discrete data:</strong> in <code>0, 1, 2, 2, 3, 2, 4</code>, the mode is 2 children.</li>
+            <li><strong>Repeated values:</strong> in ratings <code>5, 5, 4, 5, 3, 5, 4</code>, the mode is 5 stars.</li>
+          </ul>
+
+          <h3>Mode in machine learning</h3>
+          <h4>1. Missing-value imputation</h4>
+          <p>
+            In <code>Red, Blue, Red, ?, Green, Red</code>, the missing category
+            can be replaced with the mode, <strong>Red</strong>.
+          </p>
+          <h4>2. Classification and majority voting</h4>
+          <p>
+            For predictions <code>Dog, Dog, Cat, Dog, Bird</code>, the majority
+            prediction is Dog. This idea is used in Random Forests and other
+            ensemble methods.
+          </p>
+          <h4>3. Image processing</h4>
+          <pre><code>Cat Cat Cat
+Cat Dog Cat
+Cat Cat Cat</code></pre>
+          <p>
+            The neighboring mode is Cat, so the noisy Dog label may be corrected
+            to Cat during image segmentation.
+          </p>
+
+          <h3>Mode in Python</h3>
+          <p>Using NumPy:</p>
+          <pre><code>import numpy as np
+
+data = np.array([2, 3, 3, 5, 7, 3, 8])
+values, counts = np.unique(data, return_counts=True)
+mode = values[np.argmax(counts)]
+print(mode)  # 3</code></pre>
+          <p>Using SciPy:</p>
+          <pre><code>from scipy import stats
+
+data = [2, 3, 3, 5, 7, 3, 8]
+result = stats.mode(data)
+print(result.mode)  # 3</code></pre>
+
+          <h2>The central lesson</h2>
+          <ul>
+            <li><strong>Mean:</strong> What is the average?</li>
+            <li><strong>Median:</strong> What is the middle?</li>
+            <li><strong>Mode:</strong> What is most common?</li>
+          </ul>
+          <div class="callout">
+            <strong>Statistical insight:</strong> a statistician does not ask,
+            “Which one is best?” The better question is, “Which one describes
+            my data correctly?”
+          </div>
+
+          <h2>Final exercise</h2>
+          <p>Find the mean, median, and mode of:</p>
+          <pre><code>4, 5, 5, 7, 9, 5, 12</code></pre>
+          <details>
+            <summary>Show the answer</summary>
+            <div class="math">Mean = 47 / 7 &asymp; 6.71</div>
+            <p>The sorted data are <code>4, 5, 5, [5], 7, 9, 12</code>.</p>
+            <p>Median = <strong>5</strong>; Mode = <strong>5</strong>.</p>
+          </details>
+
+          <h2>Next: Quartiles and percentiles</h2>
+          <p>
+            Next, we move from the center to the distribution of data. Quartiles
+            and percentiles are essential for box plots, outlier detection,
+            feature analysis, and robust machine-learning preprocessing.
+          </p>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+        <div class="sidebar-note">
+          <strong>Coming next</strong>
+          <p>
+            Quartiles and percentiles move beyond the center to show how values
+            are distributed across a dataset.
+          </p>
+        </div>
+      </aside>
+    </main>
+    <div data-footer></div>
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

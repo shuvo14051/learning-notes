@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Learn ten must-know Python functions: print, help, range, map, filter, sum, sorted, enumerate, zip, and open."
+    />
+    <title>10 Must-Know Functions in Python | Ahamed Learning Notes</title>
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+  <body data-topic="python-concepts" data-post="10-must-know-functions">
+    <div data-header></div>
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Python Concepts</p>
+          <h1>10 Must-Know Functions in Python</h1>
+          <p>
+            Ten built-in functions that make everyday Python code clearer,
+            shorter, and easier to reason about.
+          </p>
+          <div class="meta">
+            <time>August 31, 2026</time><span>&bull;</span
+            ><span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <p>
+            Python's built-in functions solve common tasks without requiring an
+            import. The best way to learn them is to understand what each one
+            returns and then use it in a small, concrete example.
+          </p>
+
+          <h2>1. <code>print()</code> &mdash; display output</h2>
+          <p>
+            <code>print()</code> sends values to the console. Multiple values
+            are separated by a space by default. Use <code>sep</code> to change
+            the separator and <code>end</code> to change what is written after
+            the final value.
+          </p>
+          <p>
+            Think of <code>sep</code> as the text inserted <em>between</em> the
+            values passed to one <code>print()</code> call. Its default is one
+            space. The <code>end</code> value is inserted <em>after</em> everything
+            has been printed; its default is a newline (<code>"\n"</code>), which
+            is why consecutive calls normally appear on separate lines. Setting
+            <code>end=" "</code> keeps the next output on the same line with a
+            space between it.
+          </p>
+          <h3>Default <code>sep=" "</code></h3>
+          <pre><code>age = 32
+name = "Shuvo"
+print("My name is", name, "I am", age, "years old")</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>My name is Shuvo I am 32 years old</code></pre>
+          <p>
+            No <code>sep</code> was supplied, so Python puts its default one-space
+            separator between every value.
+          </p>
+          <h3>Custom <code>sep</code></h3>
+          <pre><code>age = 32
+name = "Shuvo"
+print("My name is", name, "I am", age, "years old", sep=" | ")</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>My name is | Shuvo | I am | 32 | years old</code></pre>
+          <p>
+            The values are identical to the default example. The only change is
+            <code>sep=" | "</code>, so the vertical-bar separator replaces every
+            default space between the five values.
+          </p>
+          <h3>Default <code>end="\n"</code></h3>
+          <pre><code>print("Hello")
+print("World")</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>Hello
+World</code></pre>
+          <p>Each call ends with a newline, so the next call starts a new line.</p>
+          <h3>Custom <code>end</code></h3>
+          <pre><code>print("Hello", end=" ")
+print("World")</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>Hello World</code></pre>
+          <p>The first call ends with a space instead of moving to a new line.</p>
+          <p>
+            Use <code>print()</code> while learning, debugging, displaying a
+            result in a command-line program, or formatting simple reports.
+          </p>
+
+          <h2>2. <code>help()</code> &mdash; inspect documentation</h2>
+          <p>
+            <code>help()</code> displays documentation for built-ins, modules,
+            classes, and your own functions. For a user-defined function, its
+            docstring becomes the main help text.
+          </p>
+          <p>
+            This is especially useful in an interactive Python session when you
+            know the object you want to use but cannot remember its parameters
+            or behavior. Pass the object itself&mdash;<code>help(print)</code>, not
+            <code>help(print())</code>&mdash;so Python examines it instead of
+            calling it.
+          </p>
+          <h3>Help for a built-in function</h3>
+          <pre><code>help(print)</code></pre>
+          <p><strong>Output (shortened):</strong></p>
+          <pre><code>Help on built-in function print in module builtins:
+print(*args, sep=' ', end='\n', file=None, flush=False)
+...</code></pre>
+          <h3>Help for your own function</h3>
+          <pre><code>def sum_of_two(a, b):
+    """Return the sum of a and b."""
+    return a + b
+
+help(sum_of_two)</code></pre>
+          <p><strong>Output (shortened):</strong></p>
+          <pre><code>Help on function sum_of_two in module __main__:
+sum_of_two(a, b)
+    Return the sum of a and b.</code></pre>
+
+          <h2>3. <code>range()</code> &mdash; generate a sequence of integers</h2>
+          <p>
+            <code>range(start, stop, step)</code> represents integers from
+            <code>start</code> up to, but not including, <code>stop</code>. It is
+            memory-efficient because it does not build a full list unless you
+            explicitly ask for one.
+          </p>
+          <p>
+            The three values have distinct jobs: <code>start</code> is the first
+            number (default <code>0</code>), <code>stop</code> is the exclusive
+            boundary, and <code>step</code> is the amount added each time
+            (default <code>1</code>). A negative step counts backward. The stop
+            value is excluded so ranges work naturally with zero-based indexes
+            and lengths&mdash;<code>range(10)</code> produces exactly ten values.
+          </p>
+          <h3>Only <code>stop</code></h3>
+          <pre><code>print(list(range(10)))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]</code></pre>
+          <p><code>start</code> defaults to 0 and <code>step</code> defaults to 1.</p>
+          <h3><code>start</code> and <code>stop</code></h3>
+          <pre><code>print(list(range(1, 11)))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</code></pre>
+          <p>The sequence starts at 1 and stops before 11.</p>
+          <h3>Positive <code>step</code></h3>
+          <pre><code>print(list(range(1, 11, 2)))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>[1, 3, 5, 7, 9]</code></pre>
+          <p>Python adds 2 each time and still stops before 11.</p>
+          <h3>Negative <code>step</code></h3>
+          <pre><code>print(list(range(10, -1, -2)))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>[10, 8, 6, 4, 2, 0]</code></pre>
+          <p>Python subtracts 2 each time and stops before crossing -1.</p>
+          <p>
+            Use <code>range()</code> when a loop must run a known number of
+            times, when generating integer sequences, or when working with
+            indexes. If you only need the items of a collection, loop over the
+            collection directly instead.
+          </p>
+
+          <h2>4. <code>map()</code> &mdash; transform every item</h2>
+          <p>
+            <code>map(function, iterable)</code> applies a function to every
+            item and returns a lazy map object. Convert it to a list when you
+            need to view or reuse all results at once.
+          </p>
+          <p>
+            Use <code>map()</code> when the same transformation must be applied
+            to every item: converting text to numbers, normalizing names, or
+            extracting a property such as length. It separates the
+            transformation rule from the data and processes items only as they
+            are requested, which is useful for large inputs. It is not strictly
+            necessary&mdash;a list comprehension can express the same idea and
+            is often clearer for more complex transformations.
+          </p>
+          <h3>The map object</h3>
+          <pre><code>fruits = ["apple", "orange", "kiwi", "berries"]
+lengths = map(len, fruits)
+print(lengths)</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>&lt;map object at 0x...&gt;</code></pre>
+          <p>
+            The address varies. This output shows that no result list was built;
+            <code>lengths</code> is an iterator waiting to produce values.
+          </p>
+          <h3>Materialize the results with <code>list()</code></h3>
+          <pre><code>fruits = ["apple", "orange", "kiwi", "berries"]
+lengths = map(len, fruits)
+print(list(lengths))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>[5, 6, 4, 7]</code></pre>
+          <h3>Transform with a lambda</h3>
+          <pre><code>fruits = ["apple", "orange", "kiwi", "berries"]
+result = map(lambda item: item + "_00", fruits)
+print(list(result))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>['apple_00', 'orange_00', 'kiwi_00', 'berries_00']</code></pre>
+          <h3>Transform with a named function</h3>
+          <pre><code>def add_00(item):
+    return item + "_00"
+
+fruits = ["apple", "orange", "kiwi", "berries"]
+print(list(map(add_00, fruits)))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>['apple_00', 'orange_00', 'kiwi_00', 'berries_00']</code></pre>
+          <div class="callout">
+            <strong>Important:</strong> a map object is an iterator. After it
+            has been consumed, iterating over the same object again produces no
+            values. Without <code>list()</code>, this laziness means Python holds
+            the rule and source rather than calculating and storing every result
+            immediately. A loop can consume it directly; use <code>list()</code>
+            only when you need all results stored or displayed at once.
+          </div>
+
+          <h2>5. <code>filter()</code> &mdash; keep matching items</h2>
+          <p>
+            <code>filter(function, iterable)</code> keeps only the items for
+            which the function returns a truthy value. Like <code>map</code>, it
+            returns a lazy iterator.
+          </p>
+          <p>
+            Choose <code>filter()</code> when you want a smaller collection but
+            do not want to change the surviving values&mdash;for example, valid
+            records, active users, or numbers above a threshold. The predicate
+            function answers one question for each item: keep it or discard it?
+          </p>
+          <h3>Filter with a lambda</h3>
+          <pre><code>fruits = ["apple", "orange", "kiwi", "berries", "coconut"]
+filtered = filter(lambda item: len(item) &gt; 6, fruits)
+print(list(filtered))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>['berries', 'coconut']</code></pre>
+          <p>Only the two words whose lengths are greater than 6 survive.</p>
+          <h3>Filter with a named predicate</h3>
+          <pre><code>def longer_than_6(item):
+    return len(item) &gt; 6
+
+fruits = ["apple", "orange", "kiwi", "berries", "coconut"]
+print(list(filter(longer_than_6, fruits)))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>['berries', 'coconut']</code></pre>
+          <p>
+            A filter object behaves like the map object above: it calculates
+            values on demand and is consumed once. A list comprehension such as
+            <code>[item for item in fruits if len(item) &gt; 6]</code> is an equally
+            valid, often very readable alternative.
+          </p>
+
+          <h2>6. <code>sum()</code> &mdash; add numeric values</h2>
+          <p>
+            <code>sum(iterable, start=0)</code> adds the values in an iterable.
+            The optional <code>start</code> value is included in the total; it
+            does not indicate where iteration begins.
+          </p>
+          <p>
+            Use it for totals such as prices, scores, distances, or values
+            produced by a generator. Python starts with <code>start</code>, adds
+            each item from left to right, and returns one number. An empty
+            iterable returns the start value, so <code>sum([])</code> is
+            <code>0</code>. It is intended for numeric addition, not joining
+            strings.
+          </p>
+          <h3>Default <code>start=0</code></h3>
+          <pre><code>numbers = [1, 2, 3, 4, 5]
+print(sum(numbers))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>15</code></pre>
+          <p>Python calculates <code>0 + 1 + 2 + 3 + 4 + 5</code>.</p>
+          <h3>Positive custom <code>start</code></h3>
+          <pre><code>numbers = [1, 2, 3, 4, 5]
+print(sum(numbers, start=10))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>25</code></pre>
+          <p>Python calculates <code>10 + 1 + 2 + 3 + 4 + 5</code>.</p>
+          <h3>Negative custom <code>start</code></h3>
+          <pre><code>numbers = [1, 2, 3, 4, 5]
+print(sum(numbers, start=-10))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>5</code></pre>
+          <p>Python calculates <code>-10 + 1 + 2 + 3 + 4 + 5</code>.</p>
+          <p>
+            The first result is the normal total. The second begins at 10 before
+            adding the list, and the third begins at -10. For a calculated
+            total, a generator keeps the code compact:
+            <code>sum(price * quantity for price, quantity in orders)</code>.
+          </p>
+
+          <h2>7. <code>sorted()</code> &mdash; return items in order</h2>
+          <p>
+            <code>sorted()</code> returns a new list and leaves the original
+            iterable unchanged. Use <code>reverse=True</code> for descending
+            order or <code>key</code> to say which value should control sorting.
+          </p>
+          <p>
+            Use it whenever presentation or processing requires an order but
+            the source data should stay untouched. The <code>key</code> function
+            is called once per item and returns that item's comparison value. In
+            the people example, dictionaries cannot be meaningfully ordered as
+            whole objects, so the lambda extracts each person's age.
+          </p>
+          <h3>Ascending order by default</h3>
+          <pre><code>numbers = [5, 6, 2, 0, -1, 10, 3]
+print(sorted(numbers))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>[-1, 0, 2, 3, 5, 6, 10]</code></pre>
+          <h3>Descending order with <code>reverse=True</code></h3>
+          <pre><code>numbers = [5, 6, 2, 0, -1, 10, 3]
+print(sorted(numbers, reverse=True))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>[10, 6, 5, 3, 2, 0, -1]</code></pre>
+          <h3>Sort dictionaries with <code>key</code></h3>
+          <pre><code>people = [
+    {"name": "XX", "age": 30},
+    {"name": "YY", "age": 19},
+    {"name": "ZZ", "age": 24},
+    {"name": "RR", "age": 43},
+]
+
+print(sorted(people, key=lambda person: person["age"]))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>[{'name': 'YY', 'age': 19}, {'name': 'ZZ', 'age': 24},
+ {'name': 'XX', 'age': 30}, {'name': 'RR', 'age': 43}]
+</code></pre>
+          <h3>Combine <code>key</code> and <code>reverse</code></h3>
+          <pre><code>print(sorted(
+    people,
+    key=lambda person: person["age"],
+    reverse=True,
+))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>[{'name': 'RR', 'age': 43}, {'name': 'XX', 'age': 30},
+ {'name': 'ZZ', 'age': 24}, {'name': 'YY', 'age': 19}]</code></pre>
+          <div class="callout">
+            <strong><code>sorted()</code> versus <code>list.sort()</code>:</strong>
+            <code>sorted()</code> accepts any iterable and returns a new list.
+            <code>list.sort()</code> changes an existing list in place and
+            returns <code>None</code>.
+          </div>
+
+          <h2>8. <code>enumerate()</code> &mdash; pair items with indexes</h2>
+          <p>
+            <code>enumerate()</code> produces an index and an item together,
+            avoiding manual indexing with <code>range(len(...))</code>. Its
+            optional <code>start</code> argument is useful for human-friendly
+            numbering.
+          </p>
+          <p>
+            Use it when both the position and value are needed: numbered menus,
+            row numbers, progress messages, or updating an item by index. It is
+            clearer and less error-prone than calculating an index separately.
+            Like <code>map</code> and <code>filter</code>, it returns an iterator;
+            a <code>for</code> loop consumes it naturally.
+          </p>
+          <h3>Default <code>start=0</code></h3>
+          <pre><code>tasks = ["Write Paper", "Submit Code", "Submit Paper", "Write a proposal"]
+for index, task in enumerate(tasks):
+    print(index, task)</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>0 Write Paper
+1 Submit Code
+2 Submit Paper
+3 Write a proposal</code></pre>
+          <h3>Human-friendly numbering with <code>start=1</code></h3>
+          <pre><code>for number, task in enumerate(tasks, start=1):
+    print(number, task)</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>1 Write Paper
+2 Submit Code
+3 Submit Paper
+4 Write a proposal</code></pre>
+          <h3>Inspect the generated pairs</h3>
+          <pre><code>print(list(enumerate(tasks)))</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>[(0, 'Write Paper'), (1, 'Submit Code'),
+ (2, 'Submit Paper'), (3, 'Write a proposal')]</code></pre>
+
+          <h2>9. <code>zip()</code> &mdash; combine iterables by position</h2>
+          <p>
+            <code>zip()</code> groups the first items together, then the second
+            items, and so on. By default, it stops when the shortest iterable
+            is exhausted.
+          </p>
+          <p>
+            Use it when related values live in parallel collections: names and
+            ages, products and prices, or columns that should become rows. Each
+            result is a tuple. Because the ages list has only four items, the
+            unmatched name <code>"DD"</code> is omitted in the first two uses.
+            This shortest-input rule prevents missing partners from being
+            invented silently.
+          </p>
+          <h3>Loop over two iterables together</h3>
+          <pre><code>names = ["XX", "XY", "YY", "ZZ", "DD"]
+ages = [12, 23, 34, 45]
+for name, age in zip(names, ages):
+    print(name, age)</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>XX 12
+XY 23
+YY 34
+ZZ 45</code></pre>
+          <p><code>DD</code> is omitted because there is no fifth age.</p>
+          <h3>Store the pairs as a list</h3>
+          <pre><code>combined = list(zip(names, ages))
+print(combined)</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>[('XX', 12), ('XY', 23), ('YY', 34), ('ZZ', 45)]</code></pre>
+          <h3>Combine three iterables</h3>
+          <pre><code>genders = ["M", "F", "F", "M", "M"]
+for name, age, gender in zip(names, ages, genders):
+    print(name, age, gender)</code></pre>
+          <p><strong>Output:</strong></p>
+          <pre><code>XX 12 M
+XY 23 F
+YY 34 F
+ZZ 45 M</code></pre>
+          <p>
+            <code>zip()</code> is also lazy and can be consumed directly by a
+            loop. Convert it to a list only when you need to store or display
+            all pairs. When different lengths indicate bad data, modern Python
+            can detect the mismatch with <code>zip(names, ages, strict=True)</code>.
+          </p>
+
+          <h2>10. <code>open()</code> &mdash; work with files</h2>
+          <p>
+            <code>open()</code> returns a file object. Common modes are
+            <code>"r"</code> for reading, <code>"w"</code> for replacing a file,
+            and <code>"a"</code> for appending. A <code>with</code> block closes
+            the file automatically, including when an error occurs.
+          </p>
+          <p>
+            Use it when data must persist after the program ends or when your
+            program needs to consume an existing text file. The first argument
+            is the file path, the second is the mode, and <code>encoding</code>
+            defines how text characters are translated to bytes. Explicit
+            UTF-8 makes behavior consistent across operating systems.
+          </p>
+          <h3>Write mode: <code>"w"</code></h3>
+          <pre><code>with open("test.txt", "w", encoding="utf-8") as file:
+    characters_written = file.write("Hi hi hi")
+
+print(characters_written)</code></pre>
+          <p><strong>Console output:</strong></p>
+          <pre><code>8</code></pre>
+          <p><strong>Contents of <code>test.txt</code>:</strong></p>
+          <pre><code>Hi hi hi</code></pre>
+          <p>
+            Write mode creates the file if needed and replaces its contents if
+            it already exists. <code>write()</code> returns the number of
+            characters written; it does not display the text itself.
+          </p>
+          <h3>Read mode: <code>"r"</code></h3>
+          <pre><code>with open("test.txt", "r", encoding="utf-8") as file:
+    text = file.read()
+
+print(text)</code></pre>
+          <p><strong>Console output:</strong></p>
+          <pre><code>Hi hi hi</code></pre>
+          <p>
+            <code>read()</code> returns the file contents as a string. The text
+            appears in the console only because it is passed to
+            <code>print()</code> afterward.
+          </p>
+          <h3>Append mode: <code>"a"</code></h3>
+          <pre><code>with open("test.txt", "a", encoding="utf-8") as file:
+    file.write("\nHello World")</code></pre>
+          <p><strong>Console output:</strong></p>
+          <pre><code>No output</code></pre>
+          <p><strong>Final contents of <code>test.txt</code>:</strong></p>
+          <pre><code>Hi hi hi
+Hello World</code></pre>
+          <p>
+            Append mode preserves the existing text and writes new content at
+            the end. In this example, <code>"\n"</code> starts a new line before
+            adding <code>Hello World</code>.
+          </p>
+          <div class="callout">
+            <strong>Watch out:</strong> opening an existing file with
+            <code>"w"</code> erases its previous contents. Use <code>"a"</code>
+            when you want to add content instead.
+          </div>
+
+          <h2>Quick mental model</h2>
+          <p>
+            Use <code>print</code> and <code>help</code> to understand what is
+            happening; <code>range</code>, <code>enumerate</code>, and
+            <code>zip</code> to iterate; <code>map</code> and <code>filter</code>
+            to transform or select; <code>sum</code> and <code>sorted</code> to
+            summarize or order; and <code>open</code> to cross the boundary
+            between your program and a file.
+          </p>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas across the site.
+          </p>
+        </div>
+      </aside>
+    </main>
+    <div data-footer></div>
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/data/python-concepts.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

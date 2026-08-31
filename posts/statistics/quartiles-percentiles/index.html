@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Learn percentiles, quartiles, the interquartile range, box plots, outlier detection, robust scaling, and NumPy calculations."
+    />
+    <title>Quartiles and Percentiles | Ahamed Learning Notes</title>
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+  <body data-topic="statistics" data-post="quartiles-percentiles">
+    <div data-header></div>
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Statistics &bull; Lesson 4</p>
+          <h1>Quartiles and Percentiles</h1>
+          <p>
+            Move beyond the center of a dataset and learn where observations
+            lie, how widely they are distributed, and which values are unusual.
+          </p>
+          <div class="meta">
+            <time datetime="2026-08-30">August 30, 2026</time><span>&bull;</span
+            ><span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <p>
+            Mean, median, and mode measure the center of data. Quartiles and
+            percentiles help us understand <strong>how the data are
+            distributed</strong> around that center.
+          </p>
+          <p>These ideas help us determine:</p>
+          <ul>
+            <li>How spread out the data are.</li>
+            <li>Where most observations lie.</li>
+            <li>Whether values are unusual or potential outliers.</li>
+            <li>How features should be normalized or preprocessed.</li>
+          </ul>
+
+          <h2>1. Percentiles</h2>
+          <h3>What is a percentile?</h3>
+          <p>
+            A <strong>percentile</strong> tells us the value below which a
+            certain percentage of observations falls.
+          </p>
+          <div class="callout">
+            <strong>The X-th percentile:</strong> approximately X% of the data
+            is less than or equal to that value.
+          </div>
+
+          <h3>Example: exam scores</h3>
+          <pre><code>43, 52, 61, 69, 76, 84, 93</code></pre>
+
+          <h4>The 50th percentile</h4>
+          <p>
+            The 50th percentile is the value with half of the data below it.
+            It is also the <strong>median</strong>.
+          </p>
+          <div class="math">P<sub>50</sub> = 69</div>
+
+          <h4>The 90th percentile</h4>
+          <p>
+            The 90th percentile is a value near the upper end of these scores.
+            Interpreted generally, about 90% of observations are at or below
+            it and about 10% are higher.
+          </p>
+          <div class="math">P<sub>90</sub> = 87.6</div>
+          <p>
+            Using linear interpolation, 87.6 lies 40% of the way from 84 to
+            93. In a larger student population, this would mean that only about
+            10% of students scored higher than the 90th-percentile score.
+          </p>
+
+          <h3>Common percentiles</h3>
+          <table>
+            <thead><tr><th>Percentile</th><th>Special name</th></tr></thead>
+            <tbody>
+              <tr><td>25th percentile</td><td>Q1, first quartile</td></tr>
+              <tr><td>50th percentile</td><td>Q2, second quartile or median</td></tr>
+              <tr><td>75th percentile</td><td>Q3, third quartile</td></tr>
+            </tbody>
+          </table>
+
+          <h2>2. Quartiles</h2>
+          <p>
+            <strong>Quartiles</strong> divide sorted data into four equal
+            sections. Each section contains approximately 25% of the data.
+          </p>
+          <pre><code>|---------|---------|---------|---------|
+    25%       50%       75%       100%
+     Q1        Q2        Q3</code></pre>
+
+          <h3>Q1: first quartile</h3>
+          <p>
+            Q1 is the point with approximately 25% of the data below it and
+            75% above it. It is the 25th percentile.
+          </p>
+          <div class="math">Q<sub>1</sub> = P<sub>25</sub></div>
+
+          <h3>Q2: second quartile</h3>
+          <p>Q2 is the median, or the 50th percentile.</p>
+          <div class="math">Q<sub>2</sub> = P<sub>50</sub></div>
+
+          <h3>Q3: third quartile</h3>
+          <p>
+            Q3 is the point with approximately 75% of the data below it and
+            25% above it. It is the 75th percentile.
+          </p>
+          <div class="math">Q<sub>3</sub> = P<sub>75</sub></div>
+
+          <h2>3. Calculating quartiles by hand</h2>
+          <p>Consider this already sorted dataset:</p>
+          <pre><code>6, 11, 17, 23, 28, 34, 39, 46, 52</code></pre>
+          <p>There are nine observations.</p>
+
+          <h3>Step 1: find the median (Q2)</h3>
+          <pre><code>6, 11, 17, 23, [28], 34, 39, 46, 52</code></pre>
+          <div class="math">Q<sub>2</sub> = 28</div>
+
+          <h3>Step 2: find Q1</h3>
+          <p>Exclude the median and examine the lower half:</p>
+          <pre><code>6, 11, 17, 23</code></pre>
+          <div class="math">Q<sub>1</sub> = (11 + 17) / 2 = 14</div>
+
+          <h3>Step 3: find Q3</h3>
+          <p>Exclude the median and examine the upper half:</p>
+          <pre><code>34, 39, 46, 52</code></pre>
+          <div class="math">Q<sub>3</sub> = (39 + 46) / 2 = 42.5</div>
+
+          <table>
+            <thead><tr><th>Quartile</th><th>Value</th></tr></thead>
+            <tbody>
+              <tr><td>Q1</td><td>14</td></tr>
+              <tr><td>Q2</td><td>28</td></tr>
+              <tr><td>Q3</td><td>42.5</td></tr>
+            </tbody>
+          </table>
+
+          <h2>4. Interquartile range (IQR)</h2>
+          <p>
+            The <strong>interquartile range</strong> measures the spread of the
+            middle 50% of observations.
+          </p>
+          <div class="math">IQR = Q<sub>3</sub> - Q<sub>1</sub></div>
+          <p>For the hand-calculated example:</p>
+          <div class="math">IQR = 42.5 - 14 = 28.5</div>
+
+          <h3>Why is the IQR important?</h3>
+          <p>Consider these incomes:</p>
+          <pre><code>$30k, $35k, $40k, $45k, $50k, $10 million</code></pre>
+          <p>
+            The extreme income makes the mean very large. The IQR focuses on
+            the middle 50% instead, making it much more
+            <strong>robust against outliers</strong>.
+          </p>
+
+          <h2>5. The box-plot connection</h2>
+          <p>A box plot summarizes a distribution using its quartiles:</p>
+          <pre><code>       |------|========|------|
+              Q1  Q2  Q3</code></pre>
+          <ul>
+            <li>The box extends from Q1 to Q3 and contains the middle 50%.</li>
+            <li>The line inside the box marks Q2, the median.</li>
+            <li>The whiskers show the typical range outside the box.</li>
+            <li>Points beyond the whiskers may be plotted as possible outliers.</li>
+          </ul>
+
+          <h2>6. Quartiles in machine learning</h2>
+          <h3>A. Detecting outliers</h3>
+          <p>The common 1.5 &times; IQR rule flags a value as a potential outlier if:</p>
+          <div class="math">x &lt; Q<sub>1</sub> - 1.5(IQR)</div>
+          <p>or</p>
+          <div class="math">x &gt; Q<sub>3</sub> + 1.5(IQR)</div>
+
+          <p>Suppose <code>Q1 = 20</code> and <code>Q3 = 40</code>.</p>
+          <pre><code>IQR = 40 - 20 = 20
+Lower boundary = 20 - 1.5(20) = -10
+Upper boundary = 40 + 1.5(20) = 70</code></pre>
+          <p>
+            Values below -10 or above 70 are potential outliers. A flagged
+            value deserves investigation; it is not automatically an error.
+          </p>
+
+          <h3>B. Feature analysis</h3>
+          <p>Suppose you analyze these house prices:</p>
+          <pre><code>$100k, $120k, $150k, $180k, $200k, $5 million</code></pre>
+          <p>Quartiles help reveal:</p>
+          <ul>
+            <li>Where most houses are priced.</li>
+            <li>Whether the $5 million house is unusual.</li>
+            <li>Whether the feature may need a transformation.</li>
+          </ul>
+
+          <h3>C. Robust scaling</h3>
+          <p>Standardization uses the mean and standard deviation:</p>
+          <div class="math">z = (x - &mu;) / &sigma;</div>
+          <p>
+            Both quantities can be affected strongly by outliers. Robust
+            scaling instead uses the median and IQR:
+          </p>
+          <div class="math">x' = (x - Q<sub>2</sub>) / IQR</div>
+          <p>
+            Because the median and IQR resist extreme values, robust scaling is
+            often better suited to skewed features with outliers.
+          </p>
+
+          <h2>7. Python example</h2>
+          <pre><code>import numpy as np
+
+data = np.array([6, 11, 17, 23, 28, 34, 39, 46, 52])
+
+Q1 = np.percentile(data, 25)
+Q2 = np.percentile(data, 50)
+Q3 = np.percentile(data, 75)
+IQR = Q3 - Q1
+
+print(Q1, Q2, Q3)
+print(IQR)</code></pre>
+          <p>Output with NumPy's default percentile method:</p>
+          <pre><code>17.0 28.0 39.0
+22.0</code></pre>
+
+          <div class="callout">
+            <strong>Why does NumPy differ from the hand calculation?</strong>
+            Quartiles do not have one universal calculation convention for a
+            finite dataset. The hand method above excludes the median and takes
+            the medians of the two halves, producing 14 and 42.5. NumPy's
+            default percentile method uses positions and linear interpolation,
+            producing 17 and 39. Always state or consistently use the chosen
+            method when exact quartile values matter.
+          </div>
+
+          <h2>Key takeaways</h2>
+          <ul>
+            <li>A percentile locates a value within a distribution.</li>
+            <li>Q1, Q2, and Q3 are the 25th, 50th, and 75th percentiles.</li>
+            <li>The IQR measures the spread of the middle 50%.</li>
+            <li>The 1.5 &times; IQR rule identifies potential outliers.</li>
+            <li>Median-and-IQR scaling is resistant to extreme values.</li>
+            <li>Different quartile conventions can produce different answers.</li>
+          </ul>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+        <div class="sidebar-note">
+          <strong>Distribution matters</strong>
+          <p>
+            Quartiles provide a compact view of location, spread, skew, and
+            possible outliers without being dominated by extreme observations.
+          </p>
+        </div>
+      </aside>
+    </main>
+    <div data-footer></div>
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

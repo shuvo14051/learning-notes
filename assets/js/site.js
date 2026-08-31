@@ -10,6 +10,7 @@
     ["OOP", "oop"],
     ["DSA", "dsa"],
     ["SQL", "sql"],
+    ["Python Concepts", "python-concepts"],
   ];
 
   const href = (path) => `${root}${path}`;

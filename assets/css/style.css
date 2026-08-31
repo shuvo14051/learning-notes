@@ -19,11 +19,11 @@
 html {
   scroll-behavior: smooth;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 body {
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
   margin: 0;
   background: var(--canvas);
   color: var(--navy);
@@ -703,6 +703,45 @@ footer strong {
   font-size: 26px;
   margin: 30px 0;
 }
+body[data-post="mean-median-mode"] .article-content .math {
+  font-size: 20px;
+  line-height: 1.35;
+  padding: 14px 18px;
+  margin: 20px 0;
+}
+.math-fraction,
+.math-sum {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  margin: 0 0.18em;
+}
+.math-fraction > span:first-child {
+  min-width: 1.35em;
+  padding: 0 0.25em 0.08em;
+  border-bottom: 1px solid currentColor;
+}
+.math-fraction > span:last-child {
+  padding-top: 0.08em;
+}
+.math-sum {
+  display: inline-grid;
+  grid-template-rows: auto auto auto;
+  justify-items: center;
+  row-gap: 0.12em;
+  line-height: 1;
+}
+.math-sum .math-symbol {
+  font-size: 1.75em;
+  line-height: 1;
+}
+.math-sum .math-limit {
+  font-size: 0.55em;
+  line-height: 1.15;
+  white-space: nowrap;
+}
 .article-content .callout {
   background: var(--sand);
   padding: 24px;
@@ -710,9 +749,52 @@ footer strong {
   font-size: 15px;
   border: 1px solid var(--line);
 }
+.article-content table {
+  width: 100%;
+  margin: 24px 0 32px;
+  border: 1px solid var(--line);
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: var(--paper);
+  font-family: Manrope, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.article-content th,
+.article-content td {
+  padding: 14px 16px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+  overflow-wrap: break-word;
+}
+.article-content th {
+  color: white;
+  background: var(--navy);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.article-content th:last-child,
+.article-content td:last-child {
+  border-right: 0;
+}
+.article-content tbody tr:last-child td {
+  border-bottom: 0;
+}
+.article-content tbody tr:nth-child(even) {
+  background: #eef6ff;
+}
+.article-content table th:first-child,
+.article-content table td:first-child {
+  width: 50%;
+}
 .article-sidebar {
+  align-self: start;
   position: sticky;
-  top: 25px;
+  top: 24px;
 }
 .article-sidebar h2 {
   font-size: 14px;
@@ -871,6 +953,13 @@ footer strong {
   .article-sidebar {
     position: static;
   }
+  .article-content table {
+    font-size: 13px;
+  }
+  .article-content th,
+  .article-content td {
+    padding: 11px 9px;
+  }
   .article-content {
     font-size: 18px;
     overflow-wrap: anywhere;
@@ -889,6 +978,117 @@ footer strong {
   .search-results span {
     grid-column: 1/3;
   }
+}
+
+/* Statistics article diagrams */
+.stats-visual {
+  margin: 28px 0 34px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  font-family: Manrope, sans-serif;
+}
+
+.stats-visual svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.stats-visual figcaption {
+  padding: 14px 18px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.chart-axis,
+.number-line {
+  stroke: #8d99a8;
+  stroke-width: 2;
+}
+
+.chart-label,
+.visual-note,
+.spread-label {
+  fill: var(--muted);
+  font-size: 14px;
+}
+
+.pca-cloud {
+  fill: rgba(191, 216, 255, 0.32);
+  stroke: #8e73ff;
+  stroke-width: 2;
+  stroke-dasharray: 7 6;
+}
+
+.data-points circle,
+.low-dots circle {
+  fill: var(--navy);
+}
+
+.pc-one {
+  stroke: var(--coral);
+  stroke-width: 5;
+}
+
+.pc-one-fill {
+  fill: var(--coral);
+}
+
+.pc-two {
+  stroke: #42ad91;
+  stroke-width: 4;
+  stroke-dasharray: 7 5;
+}
+
+.pc-two-fill,
+.high-dots circle {
+  fill: #42ad91;
+}
+
+.pc-label,
+.visual-heading,
+.mean-label {
+  fill: var(--navy);
+  font-weight: 700;
+}
+
+.pc-label {
+  font-size: 15px;
+}
+
+.pc-label.secondary {
+  fill: #287d69;
+}
+
+.visual-heading {
+  font-size: 21px;
+}
+
+.mean-line {
+  stroke: var(--coral);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+
+.mean-label {
+  font-size: 13px;
+  text-anchor: middle;
+}
+
+.spread-bracket {
+  fill: none;
+  stroke: var(--navy);
+  stroke-width: 2;
+}
+
+.spread-bracket.high {
+  stroke: #42ad91;
+}
+
+.spread-label {
+  text-anchor: middle;
 }
 @media (prefers-reduced-motion: reduce) {
   * {

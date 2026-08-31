@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Learn variance through intuition, step-by-step calculations, population and sample formulas, Bessel's correction, and machine-learning applications."
+    />
+    <title>Understanding Variance | Ahamed Learning Notes</title>
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+  <body data-topic="statistics" data-post="variance">
+    <div data-header></div>
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Statistics</p>
+          <h1>Understanding Variance</h1>
+          <p>
+            Mean tells us where data are centered. Variance tells us how far
+            the observations spread out from that center.
+          </p>
+          <div class="meta">
+            <time datetime="2026-08-30">August 30, 2026</time><span>&bull;</span
+            ><span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <p>
+            Variance is one of the most important concepts in statistics and
+            machine learning. It answers a simple question:
+          </p>
+          <div class="callout">
+            <strong>How far are my data points spread out from the average?</strong>
+          </div>
+
+          <h2>1. The intuition behind variance</h2>
+          <p>Imagine two classes of students with different exam scores.</p>
+
+          <h3>Class A</h3>
+          <pre><code>70, 72, 68, 71, 69</code></pre>
+          <div class="math">&mu; = 70</div>
+          <p>The scores cluster closely around their average.</p>
+
+          <h3>Class B</h3>
+          <pre><code>40, 60, 70, 80, 110</code></pre>
+          <div class="math">&mu; = 72</div>
+          <p>
+            The average is similar, but the scores are much more spread out.
+            Variance captures this difference:
+          </p>
+          <ul>
+            <li><strong>Class A:</strong> low variance.</li>
+            <li><strong>Class B:</strong> high variance.</li>
+          </ul>
+
+          <h2>2. How do we calculate variance?</h2>
+          <ol>
+            <li>Find the mean.</li>
+            <li>Calculate how far each value is from the mean.</li>
+            <li>Square each of those differences.</li>
+            <li>Average the squared differences.</li>
+          </ol>
+          <p>
+            The difference between an observation and the mean is called its
+            <strong>deviation</strong>.
+          </p>
+
+          <h3>Worked example</h3>
+          <p>Consider the data:</p>
+          <pre><code>2, 4, 6</code></pre>
+
+          <h4>Step 1: calculate the mean</h4>
+          <div class="math">&mu; = (2 + 4 + 6) / 3 = 4</div>
+
+          <h4>Step 2: calculate the deviations</h4>
+          <table>
+            <thead><tr><th>Value</th><th>Deviation from mean</th></tr></thead>
+            <tbody>
+              <tr><td>2</td><td>2 - 4 = -2</td></tr>
+              <tr><td>4</td><td>4 - 4 = 0</td></tr>
+              <tr><td>6</td><td>6 - 4 = 2</td></tr>
+            </tbody>
+          </table>
+
+          <h4>Why not average the deviations?</h4>
+          <div class="math">(-2 + 0 + 2) / 3 = 0</div>
+          <p>
+            Deviations below and above the mean cancel one another. In fact,
+            deviations from the mean always sum to zero, so their ordinary
+            average cannot measure spread. Squaring removes the negative signs.
+          </p>
+
+          <h4>Step 3: square the deviations</h4>
+          <table>
+            <thead><tr><th>Value</th><th>Deviation</th><th>Squared deviation</th></tr></thead>
+            <tbody>
+              <tr><td>2</td><td>-2</td><td>4</td></tr>
+              <tr><td>4</td><td>0</td><td>0</td></tr>
+              <tr><td>6</td><td>2</td><td>4</td></tr>
+            </tbody>
+          </table>
+
+          <h4>Step 4: average the squared deviations</h4>
+          <div class="math">Variance = (4 + 0 + 4) / 3 = 8 / 3 &asymp; 2.67</div>
+
+          <h2>3. Population variance</h2>
+          <p>
+            When the data contain every member of the population, population
+            variance is written as:
+          </p>
+          <div class="math">
+            <span>&sigma;<sup>2</sup> =</span>
+            <span class="math-fraction">
+              <span>&sum;(x<sub>i</sub> - &mu;)<sup>2</sup></span>
+              <span>N</span>
+            </span>
+          </div>
+          <ul>
+            <li><code>&sigma;<sup>2</sup></code> is the population variance.</li>
+            <li><code>x<sub>i</sub></code> is each observation.</li>
+            <li><code>&mu;</code> is the population mean.</li>
+            <li><code>N</code> is the number of observations in the population.</li>
+          </ul>
+
+          <h2>4. Sample variance</h2>
+          <p>
+            Often we cannot measure an entire population. For example, rather
+            than measuring the height of every human on Earth, we might study a
+            sample of 1,000 people. Sample variance is written as:
+          </p>
+          <div class="math">
+            <span>s<sup>2</sup> =</span>
+            <span class="math-fraction">
+              <span>&sum;(x<sub>i</sub> - x&#772;)<sup>2</sup></span>
+              <span>n - 1</span>
+            </span>
+          </div>
+          <p>
+            Population variance divides by <code>N</code>. Sample variance
+            divides by <code>n - 1</code>.
+          </p>
+
+          <h3>Why do we use n - 1?</h3>
+          <p>
+            This adjustment is called <strong>Bessel's correction</strong>.
+            When the sample mean is used in place of the unknown population
+            mean, dividing by <code>n</code> tends to underestimate population
+            variance. Dividing by <code>n - 1</code> corrects that bias.
+          </p>
+          <div class="callout">
+            <strong>Remember:</strong> use <code>n - 1</code> when estimating
+            population variance from a sample.
+          </div>
+
+          <h2>5. The units of variance</h2>
+          <p>
+            Because deviations are squared, variance is expressed in squared
+            units. If distance is measured in meters, variance is measured in
+            square meters. If height is measured in centimeters, variance is
+            measured in square centimeters.
+          </p>
+          <pre><code>Data:      centimeters (cm)
+Variance: square centimeters (cm&sup2;)</code></pre>
+          <p>
+            Squared units can be difficult to interpret. That is why we often
+            use <strong>standard deviation</strong>, the square root of variance,
+            which returns to the original unit.
+          </p>
+
+          <h2>6. Variance in machine learning</h2>
+          <h3>A. The bias-variance tradeoff</h3>
+          <p>A model can fail in two important ways.</p>
+
+          <h4>High bias</h4>
+          <p>
+            A high-bias model is too simple to learn the underlying pattern.
+            This produces <strong>underfitting</strong>.
+          </p>
+
+          <h4>High variance</h4>
+          <p>
+            A high-variance model responds too strongly to the particular
+            training set. It may memorize training examples but fail to
+            generalize to new data. This produces <strong>overfitting</strong>.
+          </p>
+          <pre><code>Low bias + high variance
+           |
+           v
+       Overfitting</code></pre>
+          <p>
+            Understanding variance is therefore central to understanding model
+            generalization.
+          </p>
+
+          <h3>B. Feature selection</h3>
+          <p>Consider a feature with little variation:</p>
+          <pre><code>Age: 25, 26, 27, 28, 29</code></pre>
+          <p>Now consider a feature with much greater variation:</p>
+          <pre><code>Income: $20k, $50k, $100k, $200k, $500k</code></pre>
+          <p>
+            The income feature may contain more distinguishing information.
+            Some feature-selection methods remove near-zero-variance features,
+            although variance alone does not prove that a feature is useful.
+          </p>
+
+          <h3>C. Principal Component Analysis (PCA)</h3>
+          <p>
+            Imagine viewing a stretched cloud of data points. PCA rotates the
+            coordinate system so its first axis follows the longest direction
+            of that cloud&mdash;the direction containing the most variance.
+          </p>
+          <figure class="stats-visual">
+            <svg viewBox="0 0 720 390" role="img" aria-labelledby="pca-title pca-desc">
+              <title id="pca-title">PCA direction of maximum variance</title>
+              <desc id="pca-desc">A diagonal cloud of points with a long first principal-component arrow and a short perpendicular second-component arrow.</desc>
+              <line class="chart-axis" x1="70" y1="325" x2="665" y2="325" />
+              <line class="chart-axis" x1="70" y1="325" x2="70" y2="45" />
+              <text class="chart-label" x="650" y="355">Feature 1</text>
+              <text class="chart-label" x="20" y="55">Feature 2</text>
+              <ellipse class="pca-cloud" cx="360" cy="190" rx="250" ry="67" transform="rotate(-24 360 190)" />
+              <g class="data-points">
+                <circle cx="145" cy="277" r="8" /><circle cx="184" cy="262" r="8" />
+                <circle cx="220" cy="235" r="8" /><circle cx="254" cy="243" r="8" />
+                <circle cx="286" cy="210" r="8" /><circle cx="323" cy="215" r="8" />
+                <circle cx="350" cy="176" r="8" /><circle cx="386" cy="188" r="8" />
+                <circle cx="420" cy="151" r="8" /><circle cx="452" cy="159" r="8" />
+                <circle cx="490" cy="124" r="8" /><circle cx="525" cy="129" r="8" />
+                <circle cx="562" cy="91" r="8" />
+              </g>
+              <line class="pc-one" x1="120" y1="296" x2="595" y2="76" />
+              <polygon class="pc-one-fill" points="595,76 574,79 586,96" />
+              <text class="pc-label" x="500" y="72">PC1: most variance</text>
+              <line class="pc-two" x1="360" y1="190" x2="307" y2="76" />
+              <polygon class="pc-two-fill" points="307,76 305,96 322,88" />
+              <text class="pc-label secondary" x="205" y="62">PC2: less variance</text>
+            </svg>
+            <figcaption>
+              PC1 follows the longest spread of the point cloud. PC2 is
+              perpendicular and captures the smaller remaining spread.
+            </figcaption>
+          </figure>
+          <p>
+            Projecting the points onto PC1 preserves more of their differences
+            than projecting them onto another direction. This is why PCA can
+            reduce dimensions while retaining much of the information.
+          </p>
+
+          <h2>7. Variance in Python</h2>
+          <pre><code>import numpy as np
+
+data = np.array([2, 4, 6])
+
+population_variance = np.var(data)
+sample_variance = np.var(data, ddof=1)
+
+print(population_variance)
+print(sample_variance)</code></pre>
+          <p>Output:</p>
+          <pre><code>2.6666666666666665
+4.0</code></pre>
+          <p>
+            Rounded to two decimal places, the population variance is 2.67.
+            Setting <code>ddof=1</code> makes NumPy divide by
+            <code>n - 1</code>, producing the sample variance of 4.0.
+          </p>
+
+          <h2>8. Visual understanding</h2>
+          <p>
+            First, compare these two distributions. Both contain five values
+            and both have the same mean of 50.
+          </p>
+          <table>
+            <thead><tr><th>Distribution</th><th>Values</th><th>Mean</th></tr></thead>
+            <tbody>
+              <tr><td>Dataset A</td><td>48, 49, 50, 51, 52</td><td>50</td></tr>
+              <tr><td>Dataset B</td><td>10, 30, 50, 70, 90</td><td>50</td></tr>
+            </tbody>
+          </table>
+          <p>
+            Dataset A is the <strong>low-variance distribution</strong> because
+            its values stay near 50. Dataset B is the
+            <strong>high-variance distribution</strong> because its values lie
+            much farther from 50. The figure shows that difference spatially.
+          </p>
+          <figure class="stats-visual variance-visual">
+            <svg viewBox="0 0 720 410" role="img" aria-labelledby="variance-title variance-desc">
+              <title id="variance-title">Low variance compared with high variance</title>
+              <desc id="variance-desc">The low-variance observations cluster around a mean of 50, while high-variance observations are spread far from the same mean.</desc>
+              <text class="visual-heading" x="45" y="45">Dataset A: low variance</text>
+              <text class="visual-note" x="45" y="72">Values stay close to the mean</text>
+              <line class="number-line" x1="60" y1="135" x2="660" y2="135" />
+              <line class="mean-line" x1="360" y1="92" x2="360" y2="170" />
+              <text class="mean-label" x="360" y="88">mean = 50</text>
+              <g class="low-dots">
+                <circle cx="306" cy="135" r="10" /><circle cx="333" cy="135" r="10" />
+                <circle cx="360" cy="135" r="10" /><circle cx="387" cy="135" r="10" />
+                <circle cx="414" cy="135" r="10" />
+              </g>
+              <path class="spread-bracket low" d="M306 180 v10 H414 v-10" />
+              <text class="spread-label" x="360" y="215">small spread</text>
+
+              <text class="visual-heading" x="45" y="270">Dataset B: high variance</text>
+              <text class="visual-note" x="45" y="297">Values lie far from the same mean</text>
+              <line class="number-line" x1="60" y1="350" x2="660" y2="350" />
+              <line class="mean-line" x1="360" y1="307" x2="360" y2="385" />
+              <text class="mean-label" x="360" y="303">mean = 50</text>
+              <g class="high-dots">
+                <circle cx="90" cy="350" r="10" /><circle cx="225" cy="350" r="10" />
+                <circle cx="360" cy="350" r="10" /><circle cx="495" cy="350" r="10" />
+                <circle cx="630" cy="350" r="10" />
+              </g>
+              <path class="spread-bracket high" d="M90 385 v10 H630 v-10" />
+            </svg>
+            <figcaption>
+              Both groups balance at 50, but the second group has larger
+              distances from 50 and therefore a larger variance.
+            </figcaption>
+          </figure>
+
+          <h2>9. Mean vs. variance</h2>
+          <table>
+            <thead><tr><th>Concept</th><th>What it tells us</th></tr></thead>
+            <tbody>
+              <tr><td>Mean</td><td>Where the data are centered</td></tr>
+              <tr><td>Variance</td><td>How spread out the data are</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Same mean, different distributions</h3>
+          <pre><code>Dataset A: 48, 49, 50, 51, 52
+Mean: 50
+Variance: small
+
+Dataset B: 10, 30, 50, 70, 90
+Mean: 50
+Variance: large</code></pre>
+          <p>
+            The two datasets share the same mean but have completely different
+            distributions. A measure of center alone cannot tell the full story.
+          </p>
+
+          <div class="callout">
+            <strong>Key idea:</strong> the mean locates the center; variance
+            measures the average squared distance from that center.
+          </div>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+        <div class="sidebar-note">
+          <strong>Coming next</strong>
+          <p>
+            Standard deviation converts variance back into the original unit,
+            making spread easier to interpret.
+          </p>
+        </div>
+      </aside>
+    </main>
+    <div data-footer></div>
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>
