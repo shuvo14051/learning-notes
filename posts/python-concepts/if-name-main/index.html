@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Learn what if __name__ == '__main__' does in Python and why it keeps imported modules from running standalone program code."
+    />
+    <title>What Is the Use of if __name__ == "__main__"? | Ahamed Learning Notes</title>
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+  <body data-topic="python-concepts" data-post="if-name-main">
+    <div data-header></div>
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Python Concepts</p>
+          <h1>What Is the Use of <code>if __name__ == "__main__"</code>?</h1>
+          <p>
+            Control whether code runs only when a Python file is executed
+            directly or stays quiet when the file is imported.
+          </p>
+          <div class="meta">
+            <time>August 31, 2026</time><span>&bull;</span
+            ><span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <p>
+            A Python file can be used in two different ways. You can run the
+            file itself as a program, or you can import it so another file can
+            reuse its functions and classes. The line
+            <code>if __name__ == "__main__"</code> helps Python code behave
+            differently in those two situations.
+          </p>
+          <p>
+            Put reusable definitions outside this condition. Put actions such
+            as asking for input, printing results, or starting the program
+            inside it. Those actions then run <strong>only when the file is
+            executed directly</strong> and stay quiet when the file is
+            <strong>imported into another file</strong>.
+          </p>
+
+          <h2>Why This Problem Exists</h2>
+          <p>
+            In Python, when you import a file, Python executes that file from
+            top to bottom. That means any print statements, input calls, or
+            function calls sitting in the main body of the file will run
+            immediately.
+          </p>
+          <p>
+            That becomes a problem when you want to reuse functions from one
+            file inside another file.
+          </p>
+
+          <h2>Example Without <code>__main__</code></h2>
+          <h3>calculator.py</h3>
+          <pre><code>def add(a, b):
+    return a + b
+
+def subtract(a, b):
+    return a - b
+
+print("This is a simple calculator")
+
+x = int(input("Enter first number: "))
+y = int(input("Enter second number: "))
+
+print("Sum:", add(x, y))
+print("Difference:", subtract(x, y))</code></pre>
+
+          <h3>program.py</h3>
+          <pre><code>import calculator
+
+print("Using the calculator module")
+print(calculator.add(10, 5))</code></pre>
+
+          <p>You might expect <code>program.py</code> to just print:</p>
+          <pre><code>Using the calculator module
+15</code></pre>
+          <p>But that is not what happens.</p>
+          <p>
+            Since Python executes the entire imported file, importing
+            <code>calculator</code> also runs its print statements and input
+            calls. So <code>program.py</code> unexpectedly starts behaving like
+            an interactive calculator.
+          </p>
+          <p>
+            For example, if the user enters <code>8</code> and <code>3</code>,
+            the actual output is:
+          </p>
+          <pre><code>This is a simple calculator
+Enter first number: 8
+Enter second number: 3
+Sum: 11
+Difference: 5
+Using the calculator module
+15</code></pre>
+          <p>
+            The first five lines come from <code>calculator.py</code> while it is
+            being imported. Only after that file finishes running Python
+            return to <code>program.py</code> and print its final two lines. The
+            import was meant to provide <code>add()</code>, but it also started
+            the calculator because those actions were left at the top level.
+          </p>
+
+          <h2>The Fix: <code>if __name__ == "__main__"</code></h2>
+          <p>
+            This is exactly why Python uses the
+            <code>if __name__ == "__main__"</code> pattern. It protects code that
+            should only run when the file itself is executed directly.
+          </p>
+
+          <h3>calculator.py</h3>
+          <pre><code>def add(a, b):
+    return a + b
+
+def subtract(a, b):
+    return a - b
+
+if __name__ == "__main__":
+    print("This is a simple calculator")
+
+    x = int(input("Enter first number: "))
+    y = int(input("Enter second number: "))
+
+    print("Sum:", add(x, y))
+    print("Difference:", subtract(x, y))</code></pre>
+
+          <p>
+            Now the calculator logic only runs when <code>calculator.py</code>
+            is executed directly. If you import it from another file, only the
+            function definitions are loaded.
+          </p>
+
+          <h2>What Is <code>__name__</code>?</h2>
+          <p>
+            Before Python executes a file, it automatically gives that file a
+            variable called <code>__name__</code>. Think of it as a label that
+            tells the file, <em>"How am I being used right now?"</em>
+          </p>
+          <p>
+            When <code>calculator.py</code> is the file you asked Python to run,
+            it is the program's starting point. Python gives it the special
+            label <code>"__main__"</code>:
+          </p>
+          <pre><code># Command
+python calculator.py
+
+# Value inside calculator.py
+__name__ == "__main__"</code></pre>
+          <p>
+            When <code>program.py</code> imports <code>calculator.py</code>, the
+            calculator file is no longer the starting point. It is a module
+            named <code>calculator</code>, so Python uses that module name as the
+            label:
+          </p>
+          <pre><code># Code inside program.py
+import calculator
+
+# Value inside calculator.py during the import
+__name__ == "calculator"</code></pre>
+          <p>
+            Now read the condition like a normal question:
+            <em>"Is this file the program being run directly?"</em>
+          </p>
+          <pre><code>if __name__ == "__main__":
+    # Run this only when this file is the starting point
+    ...</code></pre>
+          <p>
+            During a direct run, the comparison is true, so the indented code
+            runs. During an import, the comparison is false, so Python skips
+            that block. The functions above it are still defined and can be
+            used by the importing file.
+          </p>
+
+          <h2>Direct Run vs Import</h2>
+          <h3>When you run the file directly</h3>
+          <pre><code>python calculator.py</code></pre>
+          <p>
+            Python treats that file as the main entry point of the program, so:
+          </p>
+          <pre><code>__name__ == "__main__"</code></pre>
+          <p>The guarded block runs.</p>
+
+          <h3>When you import the file</h3>
+          <pre><code>import calculator</code></pre>
+          <p>Python loads the file as a module, so:</p>
+          <pre><code>__name__ == "calculator"</code></pre>
+          <p>The guarded block does not run.</p>
+
+          <h2>Why This Is So Useful</h2>
+          <p>This pattern gives one file two roles:</p>
+          <ol>
+            <li>It can act as a reusable module.</li>
+            <li>It can act as a standalone program for testing or execution.</li>
+          </ol>
+          <p>That makes your code cleaner and more reusable.</p>
+
+          <h2>A Real Pythonic Structure</h2>
+          <p>
+            A common pattern is to write a <code>main()</code> function and call
+            it inside the <code>__main__</code> block.
+          </p>
+          <pre><code>def add(a, b):
+    return a + b
+
+def subtract(a, b):
+    return a - b
+
+def main():
+    print("This is a simple calculator")
+
+    x = int(input("Enter first number: "))
+    y = int(input("Enter second number: "))
+
+    print("Sum:", add(x, y))
+    print("Difference:", subtract(x, y))
+
+if __name__ == "__main__":
+    main()</code></pre>
+          <p>
+            This is better because your main program logic stays organized
+            inside a function instead of being scattered in the global body of
+            the file.
+          </p>
+
+          <div class="callout">
+            <strong>Remember:</strong> write reusable code, and keep execution
+            separate. That is the real point of <code>__main__</code>.
+          </div>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas across the site.
+          </p>
+        </div>
+      </aside>
+    </main>
+    <div data-footer></div>
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/data/python-concepts.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>

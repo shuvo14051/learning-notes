@@ -431,6 +431,10 @@ input {
   left: 40%;
   z-index: 2;
 }
+.post-card.main-symbol .card-visual b {
+  left: 50%;
+  transform: translateX(-50%);
+}
 .card-visual i {
   position: absolute;
   width: 64px;
