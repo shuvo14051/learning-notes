@@ -1,6 +1,19 @@
 window.BLOG_POSTS = window.BLOG_POSTS || [];
 window.BLOG_POSTS.push(
   {
+    title: "Singly Linked List (Part-4) - Insert Before or After a Value",
+    slug: "insert-before-after-value",
+    topic: "DSA",
+    topicSlug: "dsa",
+    date: "September 1, 2026",
+    description:
+      "Learn how to insert a node before or after a target value in a singly linked list.",
+    featured: true,
+    color: "navy",
+    symbol: "X",
+    path: "posts/dsa/insert-before-after-value/",
+  },
+  {
     title: "Singly Linked List (Part-3) - Insert at a Given Index",
     slug: "insert-at-given-index",
     topic: "DSA",
@@ -9,7 +22,7 @@ window.BLOG_POSTS.push(
     description:
       "Learn how to insert a node at a specific index without losing linked-list references.",
     featured: true,
-    color: "coral",
+    color: "navy",
     symbol: "i",
     path: "posts/dsa/insert-at-given-index/",
   },
@@ -33,7 +46,7 @@ window.BLOG_POSTS.push(
     topicSlug: "dsa",
     date: "August 24, 2026",
     description: "A short description displayed on the post card.",
-    color: "navy",
+    color: "coral",
     symbol: "{}",
     path: "posts/dsa/stack-linkedlist/",
   },

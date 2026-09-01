@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Learn how to insert a node before or after a target value in a singly linked list."
+    />
+    <title>Insert Before or After a Value | Ahamed Learning Notes</title>
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+  </head>
+
+  <body data-topic="dsa" data-post="insert-before-after-value">
+    <div data-header></div>
+
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Data Structures and Algorithms</p>
+          <h1>Insert Before or After a Value</h1>
+          <p>
+            Find a target node, then change the surrounding references to place
+            a new node immediately before or after it.
+          </p>
+          <div class="meta">
+            <time datetime="2026-09-01">September 1, 2026</time>
+            <span>&bull;</span>
+            <span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content stack-guide">
+          <section id="overview">
+            <p class="stack-section-number">01 &mdash; Overview</p>
+            <h2>Use a value instead of an index</h2>
+            <p>
+              In Part 3, we traversed the list until we reached a particular
+              index. Here, we traverse until we find a node whose
+              <code>data</code> equals <code>target</code>. Suppose the list is
+              <code>A &rarr; B &rarr; C</code> and the target is <code>B</code>.
+            </p>
+
+            <div class="stack-summary">
+              <strong>Insert after B:</strong> A &rarr; B &rarr; X &rarr; C<br />
+              <strong>Insert before B:</strong> A &rarr; X &rarr; B &rarr; C
+            </div>
+
+            <p>
+              Both methods insert beside the first matching value and return
+              immediately. If the target does not exist, the list stays
+              unchanged.
+            </p>
+          </section>
+
+          <section id="insert-after">
+            <p class="stack-section-number">02 &mdash; Insert after a value</p>
+            <h2>Find the target and connect the new node after it</h2>
+
+            <pre><code>def insert_after_value(self, target, data):
+    current_node = self.head
+
+    while current_node:
+        if current_node.data == target:
+            new_node = Node(data)
+            new_node.next = current_node.next
+            current_node.next = new_node
+            self.size += 1
+            return
+
+        current_node = current_node.next</code></pre>
+
+            <h3>Visual example: insert X after B</h3>
+            <p>
+              We begin with <code>A &rarr; B &rarr; C</code>. The target is
+              <code>B</code>, so the method walks from A to B and stops there.
+            </p>
+            <div class="stack-head">head &darr; &nbsp;&nbsp; target = B</div>
+            <div class="stack-chain">
+              <div class="stack-node"><b>A</b><small>next</small></div><i>&rarr;</i>
+              <div class="stack-node"><b>B</b><small>next</small></div><i>&rarr;</i>
+              <div class="stack-node"><b>C</b><small>next</small></div><i>&rarr;</i>
+              <span class="stack-none">None</span>
+            </div>
+
+            <div class="stack-steps">
+              <div class="stack-step">
+                <h3><span>1</span> Start at the head</h3>
+                <pre><code>current_node = self.head</code></pre>
+                <p>
+                  The temporary reference begins at the first node. Moving
+                  <code>current_node</code> does not change <code>self.head</code>.
+                </p>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>2</span> Search for the target</h3>
+                <pre><code>while current_node:
+    if current_node.data == target:</code></pre>
+                <p>
+                  Each node is checked in order. For target B, traversal stops
+                  when <code>current_node</code> refers to B.
+                </p>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>3</span> Preserve the next node</h3>
+                <pre><code>new_node = Node(data)
+new_node.next = current_node.next</code></pre>
+                <p>
+                  Create X and point it to C first. This preserves the rest of
+                  the list before B's link is changed.
+                </p>
+                <div class="stack-head">new_node &darr;</div>
+                <div class="stack-chain">
+                  <div class="stack-node"><b>X</b><small>next</small></div><i>&rarr;</i>
+                  <div class="stack-node"><b>C</b><small>next</small></div><i>&rarr;</i>
+                  <span class="stack-none">None</span>
+                </div>
+                <p>
+                  At this moment B still points directly to C. X also points to
+                  C, but X is not part of the main chain yet.
+                </p>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>4</span> Connect the target to the new node</h3>
+                <pre><code>current_node.next = new_node
+self.size += 1
+return</code></pre>
+                <p>
+                  B now points to X. The size increases, and <code>return</code>
+                  prevents the search from continuing.
+                </p>
+                <div class="stack-summary">
+                  <strong>Changed reference:</strong> B.next used to point to C.<br />
+                  <strong>Now:</strong> B.next points to X, while X.next keeps C.
+                </div>
+                <div class="stack-head">head &darr;</div>
+                <div class="stack-chain">
+                  <div class="stack-node"><b>A</b><small>next</small></div><i>&rarr;</i>
+                  <div class="stack-node"><b>B</b><small>next</small></div><i>&rarr;</i>
+                  <div class="stack-node"><b>X</b><small>next</small></div><i>&rarr;</i>
+                  <div class="stack-node"><b>C</b><small>next</small></div><i>&rarr;</i>
+                  <span class="stack-none">None</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="callout">
+              Inserting after the last node needs no special case. Its
+              <code>next</code> is <code>None</code>, so the new node simply
+              becomes the new last node.
+            </div>
+          </section>
+
+          <section id="insert-before">
+            <p class="stack-section-number">03 &mdash; Insert before a value</p>
+            <h2>Stop at the node before the target</h2>
+
+            <pre><code>def insert_before_value(self, target, data):
+    if self.head is None:
+        return
+
+    if self.head.data == target:
+        self.insert_at_beginning(data)
+        return
+
+    current_node = self.head
+
+    while current_node.next:
+        if current_node.next.data == target:
+            new_node = Node(data)
+            new_node.next = current_node.next
+            current_node.next = new_node
+            self.size += 1
+            return
+
+        current_node = current_node.next</code></pre>
+
+            <h3>Visual example: insert X before B</h3>
+            <p>
+              Again, start with <code>A &rarr; B &rarr; C</code>. This time we must
+              stop at A, because A is the node immediately before target B.
+            </p>
+            <div class="stack-head">head, current_node &darr; &nbsp;&nbsp; target = B</div>
+            <div class="stack-chain">
+              <div class="stack-node"><b>A</b><small>next</small></div><i>&rarr;</i>
+              <div class="stack-node"><b>B</b><small>next</small></div><i>&rarr;</i>
+              <div class="stack-node"><b>C</b><small>next</small></div><i>&rarr;</i>
+              <span class="stack-none">None</span>
+            </div>
+
+            <div class="stack-steps">
+              <div class="stack-step">
+                <h3><span>1</span> Handle an empty list</h3>
+                <pre><code>if self.head is None:
+    return</code></pre>
+                <p>
+                  An empty list contains no target, so there is nowhere to
+                  insert the new value.
+                </p>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>2</span> Handle a target at the head</h3>
+                <pre><code>if self.head.data == target:
+    self.insert_at_beginning(data)
+    return</code></pre>
+                <p>
+                  There is no previous node when the head is the target.
+                  Reusing <code>insert_at_beginning</code> updates both the head
+                  and the size.
+                </p>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>3</span> Look one node ahead</h3>
+                <pre><code>while current_node.next:
+    if current_node.next.data == target:</code></pre>
+                <p>
+                  To insert before B, <code>current_node</code> must stop at A.
+                  Looking at <code>current_node.next.data</code> lets us detect B
+                  while keeping a reference to the node before it.
+                </p>
+                <div class="stack-summary">
+                  <strong>current_node:</strong> A<br />
+                  <strong>current_node.next:</strong> B, the target
+                </div>
+              </div>
+
+              <div class="stack-step">
+                <h3><span>4</span> Insert between the two nodes</h3>
+                <pre><code>new_node = Node(data)
+new_node.next = current_node.next
+current_node.next = new_node</code></pre>
+                <p>
+                  First X points to B. Then A points to X. The connection order
+                  preserves B and everything after it.
+                </p>
+                <p><strong>First connection: X.next points to B</strong></p>
+                <div class="stack-chain">
+                  <div class="stack-node"><b>X</b><small>next</small></div><i>&rarr;</i>
+                  <div class="stack-node"><b>B</b><small>next</small></div><i>&rarr;</i>
+                  <div class="stack-node"><b>C</b><small>next</small></div><i>&rarr;</i>
+                  <span class="stack-none">None</span>
+                </div>
+                <p>
+                  A still points to B at this stage, so X is prepared but is
+                  not yet reachable from the head.
+                </p>
+                <p><strong>Second connection: A.next points to X</strong></p>
+                <div class="stack-head">head &darr;</div>
+                <div class="stack-chain">
+                  <div class="stack-node"><b>A</b><small>next</small></div><i>&rarr;</i>
+                  <div class="stack-node"><b>X</b><small>next</small></div><i>&rarr;</i>
+                  <div class="stack-node"><b>B</b><small>next</small></div><i>&rarr;</i>
+                  <div class="stack-node"><b>C</b><small>next</small></div><i>&rarr;</i>
+                  <span class="stack-none">None</span>
+                </div>
+                <div class="stack-summary">
+                  <strong>Changed reference:</strong> A.next used to point to B.<br />
+                  <strong>Now:</strong> A.next points to X, while X.next keeps B.
+                </div>
+              </div>
+            </div>
+
+            <div class="callout">
+              <strong>Important:</strong> use
+              <code>while current_node.next</code>. If the loop only checks
+              <code>current_node</code>, it can reach the last node and then try
+              to read <code>current_node.next.data</code> from <code>None</code>.
+            </div>
+          </section>
+
+          <section id="comparison">
+            <p class="stack-section-number">04 &mdash; Compare the operations</p>
+            <h2>Where should traversal stop?</h2>
+            <div class="stack-table-wrap">
+              <table class="stack-table">
+                <thead>
+                  <tr><th>Operation</th><th>Stop at</th><th>Main link change</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Insert after target</td>
+                    <td>The target node</td>
+                    <td><code>target.next = new_node</code></td>
+                  </tr>
+                  <tr>
+                    <td>Insert before target</td>
+                    <td>The node before the target</td>
+                    <td><code>previous.next = new_node</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="complexity">
+            <p class="stack-section-number">05 &mdash; Complexity and behavior</p>
+            <h2>The search determines the running time</h2>
+            <div class="callout">
+              <strong>Time complexity: O(n).</strong> In the worst case, each
+              method checks every node. Creating and connecting the new node
+              takes O(1) time once the target is found.
+            </div>
+            <p>
+              The methods use O(1) extra space. If values are repeated, only
+              the first matching target is used because the method returns
+              immediately after inserting.
+            </p>
+          </section>
+
+          <section id="example">
+            <p class="stack-section-number">06 &mdash; Try both methods</p>
+            <h2>Example calls</h2>
+            <pre><code># Starting list: A -&gt; B -&gt; C
+linked_list.insert_after_value("B", "X")
+# Result: A -&gt; B -&gt; X -&gt; C
+
+linked_list.insert_before_value("B", "Y")
+# Result: A -&gt; Y -&gt; B -&gt; X -&gt; C</code></pre>
+          </section>
+
+          <div class="callout">
+            <strong>Key idea:</strong> To insert after a value, stop on the
+            target. To insert before a value, stop one node earlier. Always
+            connect the new node forward before changing the existing link.
+          </div>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+        <div class="sidebar-note">
+          <strong>Knowledge Atlas</strong>
+          <p>
+            Related notes are selected from the same topic first, then from
+            connected areas.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <div data-footer></div>
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>
