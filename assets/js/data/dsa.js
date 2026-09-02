@@ -11,6 +11,7 @@ window.BLOG_POSTS.push(
     featured: true,
     color: "navy",
     symbol: "X",
+    thumbnail: "assets/images/dsa/insert-before-after-value-thumbnail.png",
     path: "posts/dsa/insert-before-after-value/",
   },
   {
@@ -24,6 +25,7 @@ window.BLOG_POSTS.push(
     featured: true,
     color: "navy",
     symbol: "i",
+    thumbnail: "assets/images/dsa/insert-at-given-index-thumbnail.png",
     path: "posts/dsa/insert-at-given-index/",
   },
   {
@@ -37,6 +39,7 @@ window.BLOG_POSTS.push(
     featured: true,
     color: "navy",
     symbol: "→",
+    thumbnail: "assets/images/dsa/singly-linked-list-insertion-thumbnail.png",
     path: "posts/dsa/singly-linked-list-insertion/",
   },
   {
@@ -45,9 +48,11 @@ window.BLOG_POSTS.push(
     topic: "DSA",
     topicSlug: "dsa",
     date: "August 24, 2026",
-    description: "A short description displayed on the post card.",
+    description:
+      "Learn how push and pop update the head of a linked-list stack in constant time.",
     color: "coral",
     symbol: "{}",
+    thumbnail: "assets/images/dsa/stack-linkedlist-thumbnail.png",
     path: "posts/dsa/stack-linkedlist/",
   },
 );

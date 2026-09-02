@@ -64,6 +64,10 @@
   }
 
   function card(post) {
+    if (post.thumbnail) {
+      return `<article class="post-card post-card--thumbnail"><a href="${href(post.path)}"><div class="card-visual card-thumbnail"><img src="${href(post.thumbnail)}" alt="" loading="lazy" decoding="async"></div><div class="card-content"><div class="card-top"><span>${post.topic}</span><time>${post.date}</time></div><h3>${post.title}</h3><p>${post.description}</p><span class="read-link">Read note <b>→</b></span></div></a></article>`;
+    }
+
     return `<article class="post-card ${post.color}"><a href="${href(post.path)}"><div class="card-top"><span>${post.topic}</span><time>${post.date}</time></div><div class="card-visual"><b>${post.symbol}</b><i></i><i></i><i></i></div><h3>${post.title}</h3><p>${post.description}</p><span class="read-link">Read note <b>→</b></span></a></article>`;
   }
 

@@ -9,6 +9,7 @@ window.BLOG_POSTS.push({
   date: "Aug 31, 2026",
   symbol: "__main__",
   color: "violet main-symbol",
+  thumbnail: "assets/images/python-concepts/if-name-main-thumbnail.png",
   path: "posts/python-concepts/if-name-main/",
 });
 window.BLOG_POSTS.push({
@@ -21,5 +22,7 @@ window.BLOG_POSTS.push({
   date: "Aug 31, 2026",
   symbol: "ƒ(x)",
   color: "sky",
+  thumbnail:
+    "assets/images/python-concepts/10-must-know-functions-thumbnail.png",
   path: "posts/python-concepts/10-must-know-functions/",
 });

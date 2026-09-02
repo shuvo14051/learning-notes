@@ -11,6 +11,7 @@ window.BLOG_POSTS.push(
     featured: true,
     color: "violet",
     symbol: "&sigma;&sup2;",
+    thumbnail: "assets/images/statistics/variance-thumbnail.png",
     path: "posts/statistics/variance/",
   },
   {
@@ -24,6 +25,7 @@ window.BLOG_POSTS.push(
     featured: true,
     color: "navy",
     symbol: "Q3",
+    thumbnail: "assets/images/statistics/quartiles-percentiles.png",
     path: "posts/statistics/quartiles-percentiles/",
   },
   {
@@ -37,6 +39,7 @@ window.BLOG_POSTS.push(
     featured: true,
     color: "coral",
     symbol: "x&#772;",
+    thumbnail: "assets/images/statistics/mean-median-mode-thumbnail.png",
     path: "posts/statistics/mean-median-mode/",
   },
 );
