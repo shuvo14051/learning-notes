@@ -141,6 +141,7 @@ window.BLOG_POSTS.push(
     featured: true,
     color: "mint",
     symbol: "@",
+    thumbnail: "assets/images/oop/class-static-instance-method.png",
     path: "posts/oop/instance-class-static-methods/",
   },
   {
@@ -154,7 +155,9 @@ window.BLOG_POSTS.push(
     featured: true,
     color: "mint",
     symbol: ".x",
+    thumbnail: "assets/images/oop/attribute-looup-thumbnail.png",
     path: "posts/oop/python-attribute-lookup/",
+    
   },
   {
     title: "Instance and Class Attributes in Python",
@@ -167,6 +170,7 @@ window.BLOG_POSTS.push(
     featured: true,
     color: "sky",
     symbol: "obj",
+    thumbnail: "assets/images/oop/instance-and-class-attributes-thumbnail.png",
     path: "posts/oop/instance-and-class-attributes/",
   },
   {
@@ -180,6 +184,7 @@ window.BLOG_POSTS.push(
     featured: true,
     color: "violet",
     symbol: "()",
+    thumbnail: "assets/images/oop/bound-methods-thumbnail.png",
     path: "posts/oop/bound-methods/",
   },
   {
@@ -193,6 +198,7 @@ window.BLOG_POSTS.push(
     featured: true,
     color: "coral",
     symbol: "Py",
+    thumbnail: "assets/images/oop/python-object-model-thumbnail.png",
     path: "posts/oop/python-object-model/",
   },
 );
