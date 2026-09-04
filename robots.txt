@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://shuvo14051.github.io/learning-notes/sitemap.xml
