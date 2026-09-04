@@ -6,7 +6,7 @@ window.BLOG_POSTS.push({
     "Learn why Python uses the __main__ guard and how it keeps reusable module code separate from code that should run directly.",
   topic: "Python Concepts",
   topicSlug: "python-concepts",
-  date: "Aug 31, 2026",
+  date: "Aug 29, 2026",
   symbol: "__main__",
   color: "violet main-symbol",
   thumbnail: "assets/images/python-concepts/if-name-main-thumbnail.png",
@@ -19,7 +19,7 @@ window.BLOG_POSTS.push({
     "Learn ten everyday Python functions for output, iteration, transformation, sorting, combining data, and working with files.",
   topic: "Python Concepts",
   topicSlug: "python-concepts",
-  date: "Aug 31, 2026",
+  date: "Aug 23, 2026",
   symbol: "ƒ(x)",
   color: "sky",
   thumbnail:

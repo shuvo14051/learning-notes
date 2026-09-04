@@ -5,7 +5,7 @@ window.BLOG_POSTS.push(
     slug: "variance",
     topic: "Statistics",
     topicSlug: "statistics",
-    date: "August 30, 2026",
+    date: "August 31, 2026",
     description:
       "Learn how variance measures spread, why samples use n - 1, and where variance appears in machine learning.",
     featured: true,
@@ -19,7 +19,7 @@ window.BLOG_POSTS.push(
     slug: "quartiles-percentiles",
     topic: "Statistics",
     topicSlug: "statistics",
-    date: "August 30, 2026",
+    date: "August 25, 2026",
     description:
       "Understand percentiles, quartiles, IQR, box plots, outlier detection, and robust feature scaling.",
     featured: true,
@@ -33,7 +33,7 @@ window.BLOG_POSTS.push(
     slug: "mean-median-mode",
     topic: "Statistics",
     topicSlug: "statistics",
-    date: "August 30, 2026",
+    date: "August 19, 2026",
     description:
       "Learn three measures of center, how outliers affect them, and when each one represents your data best.",
     featured: true,

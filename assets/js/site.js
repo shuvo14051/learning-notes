@@ -3,7 +3,7 @@
   const posts = (window.BLOG_POSTS || []).map((post, index) => ({
     ...post,
     index,
-  }));
+  })).sort((a, b) => new Date(b.date) - new Date(a.date));
   const topics = [
     ["Statistics", "statistics"],
     ["Linear Algebra", "linear-algebra"],
@@ -11,6 +11,7 @@
     ["DSA", "dsa"],
     ["SQL", "sql"],
     ["Python Concepts", "python-concepts"],
+    ["ML/DL Concepts", "ml-dl-concepts"],
   ];
 
   const href = (path) => `${root}${path}`;

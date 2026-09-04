@@ -5,12 +5,14 @@ window.BLOG_POSTS.push(
     slug: "singledispatch-and-operator-overloading",
     topic: "OOP",
     topicSlug: "oop",
-    date: "September 8, 2026",
+    date: "September 3, 2026",
     description:
       "Extend behavior through runtime type dispatch, special methods, reflected operators, and Python protocols.",
     featured: true,
     color: "navy",
     symbol: "op",
+    thumbnail:
+      "assets/images/oop/singledispatch-operator-overloading-thumbnail.png",
     path: "posts/oop/singledispatch-and-operator-overloading/",
   },
   {
@@ -18,12 +20,14 @@ window.BLOG_POSTS.push(
     slug: "polymorphism-overloading-overriding",
     topic: "OOP",
     topicSlug: "oop",
-    date: "September 7, 2026",
+    date: "September 1, 2026",
     description:
       "Compare flexible input handling with inherited runtime behavior, including dispatch and typed overloads.",
     featured: true,
     color: "mint",
     symbol: "+",
+    thumbnail:
+      "assets/images/oop/polymorphism-overloading-overriding-thumbnail.png",
     path: "posts/oop/polymorphism-overloading-overriding/",
   },
   {
@@ -31,12 +35,14 @@ window.BLOG_POSTS.push(
     slug: "encapsulation-in-inheritance",
     topic: "OOP",
     topicSlug: "oop",
-    date: "September 6, 2026",
+    date: "August 30, 2026",
     description:
       "Design stable subclass interfaces with public members, internal hooks, name mangling, and properties.",
     featured: true,
     color: "sky",
     symbol: "_x",
+    thumbnail:
+      "assets/images/oop/encapsulation-in-inheritance-thumbnail.png",
     path: "posts/oop/encapsulation-in-inheritance/",
   },
   {
@@ -44,7 +50,7 @@ window.BLOG_POSTS.push(
     slug: "super-and-constructor-chains",
     topic: "OOP",
     topicSlug: "oop",
-    date: "September 5, 2026",
+    date: "August 28, 2026",
     description:
       "Follow initialization through the MRO and build cooperative constructor chains with compatible arguments.",
     featured: true,
@@ -57,7 +63,7 @@ window.BLOG_POSTS.push(
     slug: "method-overriding",
     topic: "OOP",
     topicSlug: "oop",
-    date: "September 4, 2026",
+    date: "August 26, 2026",
     description:
       "Replace and extend inherited behavior while preserving a shared polymorphic interface.",
     featured: true,
@@ -70,7 +76,7 @@ window.BLOG_POSTS.push(
     slug: "inheritance-mental-model",
     topic: "OOP",
     topicSlug: "oop",
-    date: "September 3, 2026",
+    date: "August 24, 2026",
     description:
       "Build a mental model of specialization, inherited lookup, overriding, multilevel classes, and the MRO.",
     featured: true,
@@ -83,7 +89,7 @@ window.BLOG_POSTS.push(
     slug: "advanced-properties-and-slots",
     topic: "OOP",
     topicSlug: "oop",
-    date: "September 2, 2026",
+    date: "August 22, 2026",
     description:
       "Control assignment and deletion, protect invariants, and understand the benefits and costs of __slots__.",
     featured: true,
@@ -96,7 +102,7 @@ window.BLOG_POSTS.push(
     slug: "properties-and-encapsulation",
     topic: "OOP",
     topicSlug: "oop",
-    date: "September 1, 2026",
+    date: "August 20, 2026",
     description:
       "Use getters, setters, and properties to validate changes while preserving clean attribute syntax.",
     featured: true,
@@ -109,7 +115,7 @@ window.BLOG_POSTS.push(
     slug: "encapsulation",
     topic: "OOP",
     topicSlug: "oop",
-    date: "August 31, 2026",
+    date: "August 18, 2026",
     description:
       "Understand public interfaces, underscore conventions, name mangling, inheritance, and controlled state.",
     featured: true,
@@ -122,7 +128,7 @@ window.BLOG_POSTS.push(
     slug: "object-introspection",
     topic: "OOP",
     topicSlug: "oop",
-    date: "August 30, 2026",
+    date: "August 16, 2026",
     description:
       "Inspect and update Python objects with __dict__, vars(), dir(), getattr(), and setattr().",
     featured: true,
@@ -135,7 +141,7 @@ window.BLOG_POSTS.push(
     slug: "instance-class-static-methods",
     topic: "OOP",
     topicSlug: "oop",
-    date: "August 29, 2026",
+    date: "August 15, 2026",
     description:
       "Compare Python's three method types through binding, state access, factories, and inheritance.",
     featured: true,
@@ -149,7 +155,7 @@ window.BLOG_POSTS.push(
     slug: "python-attribute-lookup",
     topic: "OOP",
     topicSlug: "oop",
-    date: "August 28, 2026",
+    date: "August 14, 2026",
     description:
       "Follow Python's lookup order through descriptors, instance data, classes, inheritance, and fallback hooks.",
     featured: true,
@@ -164,7 +170,7 @@ window.BLOG_POSTS.push(
     slug: "instance-and-class-attributes",
     topic: "OOP",
     topicSlug: "oop",
-    date: "August 27, 2026",
+    date: "August 13, 2026",
     description:
       "Learn where Python stores instance state and shared class attributes, including lookup and shadowing.",
     featured: true,
@@ -178,7 +184,7 @@ window.BLOG_POSTS.push(
     slug: "bound-methods",
     topic: "OOP",
     topicSlug: "oop",
-    date: "August 26, 2026",
+    date: "August 12, 2026",
     description:
       "Understand how Python binds a class function to an instance and supplies self automatically.",
     featured: true,
@@ -192,7 +198,7 @@ window.BLOG_POSTS.push(
     slug: "python-object-model",
     topic: "OOP",
     topicSlug: "oop",
-    date: "August 25, 2026",
+    date: "August 11, 2026",
     description:
       "Learn how names, identity, mutability, copying, and argument passing really work in Python.",
     featured: true,

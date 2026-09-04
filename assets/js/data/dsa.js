@@ -5,7 +5,7 @@ window.BLOG_POSTS.push(
     slug: "insert-before-after-value",
     topic: "DSA",
     topicSlug: "dsa",
-    date: "September 1, 2026",
+    date: "September 2, 2026",
     description:
       "Learn how to insert a node before or after a target value in a singly linked list.",
     featured: true,
@@ -19,7 +19,7 @@ window.BLOG_POSTS.push(
     slug: "insert-at-given-index",
     topic: "DSA",
     topicSlug: "dsa",
-    date: "August 30, 2026",
+    date: "August 27, 2026",
     description:
       "Learn how to insert a node at a specific index without losing linked-list references.",
     featured: true,
@@ -33,7 +33,7 @@ window.BLOG_POSTS.push(
     slug: "singly-linked-list-insertion",
     topic: "DSA",
     topicSlug: "dsa",
-    date: "August 25, 2026",
+    date: "August 21, 2026",
     description:
       "Understand how to insert a node at the beginning and end of a singly linked list.",
     featured: true,
@@ -47,7 +47,7 @@ window.BLOG_POSTS.push(
     slug: "stack-linkedlist",
     topic: "DSA",
     topicSlug: "dsa",
-    date: "August 24, 2026",
+    date: "August 17, 2026",
     description:
       "Learn how push and pop update the head of a linked-list stack in constant time.",
     color: "coral",

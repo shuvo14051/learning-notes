@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Learn the Rand Index pair by pair, then understand how the Adjusted Rand Index corrects RI for agreement expected by chance."
+    />
+    <title>Rand Index and Adjusted Rand Index | Ahamed Learning Notes</title>
+    <link rel="stylesheet" href="../../../assets/css/style.css" />
+    <style>
+      .label-example,
+      .formula-box,
+      .pair-summary {
+        border: 1px solid var(--line);
+        background: var(--paper);
+        padding: 22px;
+        margin: 24px 0;
+      }
+      .label-example {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+      .label-example strong,
+      .label-example code {
+        display: block;
+      }
+      .label-example code {
+        margin-top: 8px;
+        font-size: 1.05rem;
+      }
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin: 24px 0;
+      }
+      .metric-grid > div {
+        border: 1px solid var(--line);
+        border-top: 4px solid var(--coral);
+        background: var(--paper);
+        padding: 18px;
+      }
+      .metric-grid > div:nth-child(2) { border-top-color: var(--violet); }
+      .metric-grid > div:nth-child(3) { border-top-color: var(--mint); }
+      .metric-grid > div:nth-child(4) { border-top-color: var(--sky); }
+      .metric-grid strong { display: block; margin-bottom: 10px; }
+      .decision-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 7px 0;
+        border-top: 1px solid var(--line);
+        font-size: 0.88rem;
+      }
+      .decision-line:first-of-type { border-top: 0; }
+      .decision-line span { color: var(--muted); }
+      .decision-line b {
+        font-family: "DM Mono", monospace;
+        font-size: 0.76rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .metric-grid p { margin: 10px 0 0; font-size: 0.9rem; }
+      .pair-table th,
+      .pair-table td { text-align: center; }
+      .pair-table {
+        table-layout: auto;
+        border: 0;
+        box-shadow: 0 14px 34px rgba(8, 29, 61, 0.08);
+      }
+      .pair-table thead th { padding: 13px 12px; }
+      .pair-table tbody td { padding: 12px; }
+      .pair-table th:first-child,
+      .pair-table td:first-child { width: 78px; }
+      .contingency th:first-child,
+      .contingency td:first-child { width: auto; }
+      .pair-table tbody tr { border-left: 4px solid transparent; }
+      .pair-table tbody tr.is-tp { border-left-color: var(--coral); }
+      .pair-table tbody tr.is-fp { border-left-color: var(--violet); }
+      .pair-table tbody tr.is-tn { border-left-color: var(--mint); }
+      .pair-table tbody tr.is-fn { border-left-color: var(--sky); }
+      .pair-table code { white-space: nowrap; }
+      .decision-badge,
+      .outcome-badge {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 4px 9px;
+        white-space: nowrap;
+        font: 700 0.72rem/1.2 "DM Mono", monospace;
+      }
+      .decision-badge.same { color: #08765a; background: #dcf8ed; }
+      .decision-badge.apart { color: #385c86; background: #e7f2ff; }
+      .outcome-badge { min-width: 34px; color: white; }
+      .outcome-badge.tp { background: var(--coral); }
+      .outcome-badge.fp { background: var(--violet); }
+      .outcome-badge.tn { background: #159574; }
+      .outcome-badge.fn { background: #397dc0; }
+      .table-wrap {
+        overflow-x: auto;
+        border-radius: 12px;
+      }
+      .table-wrap .pair-table { min-width: 610px; }
+      .table-wrap .contingency,
+      .table-wrap .group-table { min-width: 680px; }
+      .formula-box {
+        text-align: center;
+        font-family: "DM Mono", monospace;
+        font-size: 1.05rem;
+        line-height: 1.8;
+      }
+      .formula-row + .formula-row { margin-top: 12px; }
+      .formula-box .math-fraction {
+        line-height: 1.25;
+        margin: 0 0.35em;
+      }
+      .formula-box .math-fraction > span {
+        box-sizing: border-box;
+        width: 100%;
+        white-space: nowrap;
+      }
+      .pair-summary {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px 22px;
+        font-family: "DM Mono", monospace;
+      }
+      .contingency th,
+      .contingency td { text-align: center; }
+      .group-table th:first-child,
+      .group-table td:first-child { width: 24%; }
+      .group-table th:nth-child(2),
+      .group-table td:nth-child(2) { width: 56%; }
+      .group-table th:last-child,
+      .group-table td:last-child { width: 20%; text-align: center; }
+      @media (max-width: 620px) {
+        .label-example,
+        .metric-grid { grid-template-columns: 1fr; }
+        .pair-table { font-size: 0.8rem; }
+      }
+    </style>
+  </head>
+  <body data-topic="ml-dl-concepts" data-post="rand-index-adjusted-rand-index">
+    <div data-header></div>
+    <main class="shell article-layout">
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">ML/DL Concepts</p>
+          <h1>Rand Index and Adjusted Rand Index, Pair by Pair</h1>
+          <p>
+            Compare two clusterings by asking one small question about every
+            pair of observations: do both clusterings agree about whether the
+            pair belongs together?
+          </p>
+          <div class="meta">
+            <time datetime="2026-09-04">September 4, 2026</time>
+            <span>•</span><span>Ahamed Learning Notes</span>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <h2>Why compare pairs?</h2>
+          <p>
+            Cluster names are arbitrary. A predicted cluster called
+            <code>0</code> can correspond perfectly to a true cluster called
+            <code>2</code>. Comparing label values directly would therefore be
+            wrong. RI and ARI instead compare the relationships between every
+            unordered pair of observations.
+          </p>
+
+          <div class="label-example">
+            <div>
+              <strong>Predicted cluster labels</strong>
+              <code>[0, 0, 1, 2, 1]</code>
+            </div>
+            <div>
+              <strong>Ground-truth labels</strong>
+              <code>[2, 2, 3, 3, 1]</code>
+            </div>
+          </div>
+
+          <p>
+            With five rows there are <code>C(5, 2) = 10</code> distinct pairs.
+            For each pair, “positive” means the predicted labels place the two
+            rows in the same cluster; “negative” means they are in different
+            predicted clusters.
+          </p>
+
+          <h2>TP, FP, TN, and FN for clustering</h2>
+          <p>
+            Treat the prediction as the decision being tested. For each pair,
+            it predicts either <strong>same cluster</strong> (positive) or
+            <strong>different clusters</strong> (negative). The ground truth
+            tells us whether that decision is correct.
+          </p>
+          <div class="metric-grid">
+            <div>
+              <strong>TP — true positive</strong>
+              <div class="decision-line"><span>Prediction says</span><b>same cluster</b></div>
+              <div class="decision-line"><span>Ground-truth says</span><b>same cluster</b></div>
+              <p>A correct merge: both clusterings keep the pair together.</p>
+            </div>
+            <div>
+              <strong>FP — false positive</strong>
+              <div class="decision-line"><span>Prediction says</span><b>same cluster</b></div>
+              <div class="decision-line"><span>Ground-truth says</span><b>different clusters</b></div>
+              <p>A wrong merge: the prediction joins a pair that should be separate.</p>
+            </div>
+            <div>
+              <strong>TN — true negative</strong>
+              <div class="decision-line"><span>Prediction says</span><b>different clusters</b></div>
+              <div class="decision-line"><span>Ground-truth says</span><b>different clusters</b></div>
+              <p>A correct separation: both clusterings keep the pair apart.</p>
+            </div>
+            <div>
+              <strong>FN — false negative</strong>
+              <div class="decision-line"><span>Prediction says</span><b>different clusters</b></div>
+              <div class="decision-line"><span>Ground-truth says</span><b>same cluster</b></div>
+              <p>A missed merge: the prediction separates a pair that belongs together.</p>
+            </div>
+          </div>
+
+          <div class="callout">
+            <strong>The only test needed:</strong> for pair <code>(i, j)</code>,
+            compare <code>pred[i] == pred[j]</code> with
+            <code>true[i] == true[j]</code>. Equal decisions are agreements;
+            unequal decisions are disagreements.
+          </div>
+
+          <h2>Classify every pair</h2>
+          <p>
+            The label comparison is shown in parentheses. For example,
+            <code>same (0 = 0)</code> means the prediction puts both observations
+            in predicted cluster <code>0</code>.
+          </p>
+          <div class="table-wrap">
+            <table class="pair-table">
+              <thead>
+                <tr>
+                  <th>Pair</th><th>Prediction says</th><th>Truth says</th>
+                  <th>Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="is-tp"><td><code>(1, 2)</code></td><td><span class="decision-badge same">Same (0 = 0)</span></td><td><span class="decision-badge same">Same (2 = 2)</span></td><td><span class="outcome-badge tp">TP</span></td></tr>
+                <tr class="is-tn"><td><code>(1, 3)</code></td><td><span class="decision-badge apart">Apart (0 ≠ 1)</span></td><td><span class="decision-badge apart">Apart (2 ≠ 3)</span></td><td><span class="outcome-badge tn">TN</span></td></tr>
+                <tr class="is-tn"><td><code>(1, 4)</code></td><td><span class="decision-badge apart">Apart (0 ≠ 2)</span></td><td><span class="decision-badge apart">Apart (2 ≠ 3)</span></td><td><span class="outcome-badge tn">TN</span></td></tr>
+                <tr class="is-tn"><td><code>(1, 5)</code></td><td><span class="decision-badge apart">Apart (0 ≠ 1)</span></td><td><span class="decision-badge apart">Apart (2 ≠ 1)</span></td><td><span class="outcome-badge tn">TN</span></td></tr>
+                <tr class="is-tn"><td><code>(2, 3)</code></td><td><span class="decision-badge apart">Apart (0 ≠ 1)</span></td><td><span class="decision-badge apart">Apart (2 ≠ 3)</span></td><td><span class="outcome-badge tn">TN</span></td></tr>
+                <tr class="is-tn"><td><code>(2, 4)</code></td><td><span class="decision-badge apart">Apart (0 ≠ 2)</span></td><td><span class="decision-badge apart">Apart (2 ≠ 3)</span></td><td><span class="outcome-badge tn">TN</span></td></tr>
+                <tr class="is-tn"><td><code>(2, 5)</code></td><td><span class="decision-badge apart">Apart (0 ≠ 1)</span></td><td><span class="decision-badge apart">Apart (2 ≠ 1)</span></td><td><span class="outcome-badge tn">TN</span></td></tr>
+                <tr class="is-fn"><td><code>(3, 4)</code></td><td><span class="decision-badge apart">Apart (1 ≠ 2)</span></td><td><span class="decision-badge same">Same (3 = 3)</span></td><td><span class="outcome-badge fn">FN</span></td></tr>
+                <tr class="is-fp"><td><code>(3, 5)</code></td><td><span class="decision-badge same">Same (1 = 1)</span></td><td><span class="decision-badge apart">Apart (3 ≠ 1)</span></td><td><span class="outcome-badge fp">FP</span></td></tr>
+                <tr class="is-tn"><td><code>(4, 5)</code></td><td><span class="decision-badge apart">Apart (2 ≠ 1)</span></td><td><span class="decision-badge apart">Apart (3 ≠ 1)</span></td><td><span class="outcome-badge tn">TN</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pair-summary">
+            <span>TP = 1</span><span>FP = 1</span><span>TN = 7</span><span>FN = 1</span>
+          </div>
+
+          <h2>Compute the Rand Index</h2>
+          <p>
+            RI is simply the fraction of pair decisions on which the two
+            clusterings agree. The agreements are TP and TN.
+          </p>
+          <div class="formula-box">
+            <div class="formula-row">
+              RI =
+              <span class="math-fraction">
+                <span>TP + TN</span>
+                <span>TP + FP + TN + FN</span>
+              </span>
+            </div>
+            <div class="formula-row">
+              =
+              <span class="math-fraction">
+                <span>1 + 7</span>
+                <span>1 + 1 + 7 + 1</span>
+              </span>
+              =
+              <span class="math-fraction"><span>8</span><span>10</span></span>
+              = <strong>0.80</strong>
+            </div>
+          </div>
+
+          <h2>Raw RI implementation</h2>
+          <pre><code>def rand_index_raw(labels_true, labels_pred):
+    """Compute RI and its TP/FP/TN/FN pair counts."""
+    if len(labels_true) != len(labels_pred):
+        raise ValueError("Both label sequences must have the same length")
+
+    tp = fp = tn = fn = 0
+
+    for i in range(0, len(labels_pred) - 1):
+        for j in range(i + 1, len(labels_pred)):
+            if labels_pred[i] == labels_pred[j]:
+                # Positive pair
+                if labels_true[i] == labels_true[j]:
+                    tp += 1  # True positive
+                else:
+                    fp += 1  # False positive
+            else:
+                # Negative pair
+                if labels_true[i] == labels_true[j]:
+                    fn += 1  # False negative
+                else:
+                    tn += 1  # True negative
+
+    total_pairs = tp + fp + tn + fn
+    ri = (tp + tn) / total_pairs if total_pairs else 1.0
+    return ri, {"TP": tp, "FP": fp, "TN": tn, "FN": fn}
+
+
+y_pred = [0, 0, 1, 2, 1]
+y_true = [2, 2, 3, 3, 1]
+
+ri, counts = rand_index_raw(y_true, y_pred)
+print(ri)
+print(counts)</code></pre>
+          <p>Output:</p>
+          <pre><code>0.8
+{'TP': 1, 'FP': 1, 'TN': 7, 'FN': 1}</code></pre>
+
+          <h3>RI with scikit-learn</h3>
+          <p>
+            In practice, <code>rand_score</code> computes the same Rand Index
+            directly from the two label sequences.
+          </p>
+          <pre><code>from sklearn.metrics import rand_score
+
+
+y_pred = [0, 0, 1, 2, 1]
+y_true = [2, 2, 3, 3, 1]
+
+ri = rand_score(y_true, y_pred)
+print(ri)</code></pre>
+          <p>Output:</p>
+          <pre><code>0.8</code></pre>
+
+          <h2>Why RI needs adjustment</h2>
+          <p>
+            RI rewards both same-cluster and different-cluster agreements.
+            When a dataset has many clusters, most pairs are separate, so two
+            unrelated clusterings can collect many TN agreements merely by
+            chance. ARI removes the agreement expected from random clusterings
+            that preserve the two observed cluster-size distributions.
+          </p>
+
+          <div class="formula-box">
+            ARI =
+            <span class="math-fraction">
+              <span>RI − E[RI]</span>
+              <span>1 − E[RI]</span>
+            </span>
+          </div>
+          <p>
+            The numerator is agreement above chance. The denominator is the
+            greatest possible improvement over chance. Consequently, perfect
+            agreement gives ARI = 1, chance-level agreement is near 0, and
+            worse-than-chance agreement can be negative.
+          </p>
+
+          <h2>Focus: where does E[RI] come from?</h2>
+          <p>
+            Use a larger example so the true classes and predicted clusters
+            have visibly different sizes. We have <strong>9 samples</strong>:
+          </p>
+          <div class="label-example">
+            <div>
+              <strong>Ground-truth labels</strong>
+              <code>[A, A, A, A, A, B, B, B, C]</code>
+            </div>
+            <div>
+              <strong>Predicted cluster labels</strong>
+              <code>[0, 0, 0, 1, 1, 0, 2, 3, 2]</code>
+            </div>
+          </div>
+
+          <h3>Step 1: make the groups explicit</h3>
+          <div class="table-wrap">
+            <table class="group-table">
+              <thead><tr><th>Grouping</th><th>Members</th><th>Sizes</th></tr></thead>
+              <tbody>
+                <tr><td>Ground truth</td><td>A = {1, 2, 3, 4, 5}<br />B = {6, 7, 8}<br />C = {9}</td><td>5, 3, 1</td></tr>
+                <tr><td>Prediction</td><td>0 = {1, 2, 3, 6}<br />1 = {4, 5}<br />2 = {7, 9}<br />3 = {8}</td><td>4, 2, 2, 1</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            Therefore <code>K<sub>true</sub> = 3</code> and
+            <code>K<sub>pred</sub> = 4</code>. The numbers of groups and their
+            sizes differ. The total number of unordered sample pairs is:
+          </p>
+          <div class="formula-box">M = C(9, 2) = 36</div>
+
+          <h3>Step 2: count same and different pairs</h3>
+          <p>The ground-truth classes contain this many same-class pairs:</p>
+          <div class="formula-box">
+            T = C(5, 2) + C(3, 2) + C(1, 2)<br />
+            = 10 + 3 + 0 = <strong>13</strong>
+          </div>
+          <div class="formula-box">
+            <div class="formula-row">
+              Pr(same in truth) =
+              <span class="math-fraction"><span>13</span><span>36</span></span>
+            </div>
+            <div class="formula-row">
+              Pr(different in truth) =
+              <span class="math-fraction"><span>23</span><span>36</span></span>
+            </div>
+          </div>
+          <p>The predicted clusters contain this many same-cluster pairs:</p>
+          <div class="formula-box">
+            P = C(4, 2) + C(2, 2) + C(2, 2) + C(1, 2)<br />
+            = 6 + 1 + 1 + 0 = <strong>8</strong>
+          </div>
+          <div class="formula-box">
+            <div class="formula-row">
+              Pr(same in prediction) =
+              <span class="math-fraction"><span>8</span><span>36</span></span>
+            </div>
+            <div class="formula-row">
+              Pr(different in prediction) =
+              <span class="math-fraction"><span>28</span><span>36</span></span>
+            </div>
+          </div>
+
+          <h3>Step 3: calculate E[RI] from pair probabilities</h3>
+          <p>
+            Chance agreement has two parts: both clusterings say
+            <em>same</em>, or both say <em>different</em>. Add those two
+            probabilities:
+          </p>
+          <div class="formula-box">
+            <div class="formula-row">
+              E[RI] = Pr(same truth) × Pr(same prediction)
+            </div>
+            <div class="formula-row">
+              + Pr(different truth) × Pr(different prediction)
+            </div>
+            <div class="formula-row">
+              =
+              <span class="math-fraction"><span>13</span><span>36</span></span>
+              ×
+              <span class="math-fraction"><span>8</span><span>36</span></span>
+              +
+              <span class="math-fraction"><span>23</span><span>36</span></span>
+              ×
+              <span class="math-fraction"><span>28</span><span>36</span></span>
+            </div>
+            <div class="formula-row">= 0.0802 + 0.4969 ≈ <strong>0.577</strong></div>
+          </div>
+
+          <h3>The same example via a contingency table</h3>
+          <p>
+            The contingency table does not introduce a third definition. It
+            organizes the same nine samples so we can obtain the observed pair
+            counts and the same values <code>T = 13</code> and
+            <code>P = 8</code> from one place. Rows are predicted clusters;
+            columns are ground-truth classes.
+          </p>
+          <div class="table-wrap">
+            <table class="contingency">
+              <thead><tr><th></th><th>Truth A</th><th>Truth B</th><th>Truth C</th><th>Row total</th></tr></thead>
+              <tbody>
+                <tr><th>Pred 0</th><td>3</td><td>1</td><td>0</td><td>4</td></tr>
+                <tr><th>Pred 1</th><td>2</td><td>0</td><td>0</td><td>2</td></tr>
+                <tr><th>Pred 2</th><td>0</td><td>1</td><td>1</td><td>2</td></tr>
+                <tr><th>Pred 3</th><td>0</td><td>1</td><td>0</td><td>1</td></tr>
+                <tr><th>Column total</th><td>5</td><td>3</td><td>1</td><td>9</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>1. Cells give the observed TP count</h4>
+          <p>
+            A cell counts samples that share both a predicted cluster and a
+            true class. Pred 0 ∩ Truth A contains samples
+            <code>{1, 2, 3}</code>, contributing <code>C(3, 2) = 3</code>
+            TP pairs. Pred 1 ∩ Truth A contains <code>{4, 5}</code>,
+            contributing one more. All remaining cells contain at most one
+            sample and contribute zero.
+          </p>
+          <div class="formula-box">
+            TP = Σ C(cell count, 2) = C(3, 2) + C(2, 2) = <strong>4</strong>
+          </div>
+
+          <h4>2. Margins give all same-pair totals</h4>
+          <p>
+            Column totals <code>[5, 3, 1]</code> reproduce the
+            ground-truth total <code>T = 13</code>. Row totals
+            <code>[4, 2, 2, 1]</code> reproduce the prediction total
+            <code>P = 8</code>.
+          </p>
+          <div class="formula-box">
+            T = Σ C(column total, 2) = 13<br />
+            P = Σ C(row total, 2) = 8
+          </div>
+
+          <h4>3. Complete the observed pair counts</h4>
+          <div class="formula-box">
+            FP = P − TP = 8 − 4 = 4<br />
+            FN = T − TP = 13 − 4 = 9<br />
+            TN = M − TP − FP − FN = 36 − 4 − 4 − 9 = 19
+          </div>
+          <div class="formula-box">
+            RI =
+            <span class="math-fraction"><span>TP + TN</span><span>M</span></span>
+            =
+            <span class="math-fraction"><span>4 + 19</span><span>36</span></span>
+            ≈ <strong>0.639</strong>
+          </div>
+
+          <h4>4. Adjust the observed RI</h4>
+          <p>
+            The observed RI is about <code>0.639</code>, while chance alone is
+            expected to produce about <code>0.577</code>. ARI measures the
+            improvement above that chance baseline.
+          </p>
+          <div class="formula-box">
+            <div class="formula-row">
+              ARI =
+              <span class="math-fraction"><span>RI − E[RI]</span><span>1 − E[RI]</span></span>
+            </div>
+            <div class="formula-row">
+              =
+              <span class="math-fraction"><span>0.639 − 0.577</span><span>1 − 0.577</span></span>
+              ≈ <strong>0.146</strong>
+            </div>
+          </div>
+
+          <h3>ARI with scikit-learn</h3>
+          <pre><code>from sklearn.metrics import adjusted_rand_score
+
+
+y_true = ["A", "A", "A", "A", "A", "B", "B", "B", "C"]
+y_pred = [0, 0, 0, 1, 1, 0, 2, 3, 2]
+
+ari = adjusted_rand_score(y_true, y_pred)
+print(round(ari, 3))</code></pre>
+          <p>Output:</p>
+          <pre><code>0.146</code></pre>
+
+          <section class="migration">
+            <strong>Takeaway</strong>
+            <p>
+              RI asks how often two clusterings make the same pair decision.
+              ARI asks how much better that agreement is than the agreement
+              expected by chance under the observed cluster sizes. Prefer ARI
+              when comparing clustering quality across realistic experiments.
+            </p>
+          </section>
+        </div>
+      </article>
+
+      <aside class="article-sidebar">
+        <h2>Continue learning</h2>
+        <div class="related" data-related></div>
+        <div class="sidebar-note">
+          <strong>Examples at a glance</strong>
+          <p>
+            Five-sample example: RI = 0.80<br /><br />
+            Nine-sample example:<br />
+            RI ≈ 0.639<br />E[RI] ≈ 0.577<br />ARI ≈ 0.146
+          </p>
+        </div>
+      </aside>
+    </main>
+    <div data-footer></div>
+    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/data/python-concepts.js"></script>
+    <script src="../../../assets/js/data/ml-dl-concepts.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>
