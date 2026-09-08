@@ -1,6 +1,19 @@
 window.BLOG_POSTS = window.BLOG_POSTS || [];
 
 window.BLOG_POSTS.push({
+  slug: "distance-metrics",
+  title: "Distance Measures in Machine Learning",
+  description: "Explore Euclidean, Manhattan, Minkowski, cosine, Hamming, and Jaccard distances with clear formulas, worked examples, and visuals.",
+  topic: "ML/DL Concepts",
+  topicSlug: "ml-dl-concepts",
+  date: "Sep 8, 2026",
+  symbol: "d(x,y)",
+  color: "mint",
+  thumbnail: "assets/images/ml-dl-concepts/distance-metrics-thumbnail.svg",
+  path: "posts/ml-dl-concepts/distance-metrics/",
+});
+
+window.BLOG_POSTS.push({
   slug: "silhouette-score",
   title: "Silhouette Score, Made Simple",
   description:

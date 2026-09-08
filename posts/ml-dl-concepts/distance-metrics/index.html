@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en" data-root="../../../"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="description" content="Six distance measures explained with formulas, worked examples, and SVG visuals: Euclidean, Manhattan, Minkowski, cosine, Hamming, and Jaccard."/>
+<title>Distance Measures in Machine Learning | Ahamed Learning Notes</title><link rel="stylesheet" href="../../../assets/css/style.css"/>
+<style>
+
+      .distance-intro a {
+        color: #176956;
+        font-weight: 700;
+        text-decoration: underline;
+        text-decoration-thickness: 1.5px;
+        text-underline-offset: 4px;
+        border-radius: 3px;
+      }
+      .distance-intro a:hover {
+        color: #102a43;
+        background: #d6eee8;
+        text-decoration-thickness: 2px;
+      }
+      .distance-intro a:focus-visible {
+        outline: 2px solid #176956;
+        outline-offset: 4px;
+        background: #d6eee8;
+      }
+      .formula-box {
+        box-sizing: border-box;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 6px 24px;
+        max-width: 100%;
+        min-width: 0;
+        margin: 20px 0;
+        padding: 10px 14px;
+        border: 1px solid var(--line);
+        background: var(--paper);
+        font-family: Georgia, serif;
+        font-size: 1.12rem;
+        line-height: 1.5;
+      }
+      .formula-row { flex: 0 1 auto; min-width: 0; max-width: 100%; box-sizing: border-box; line-height: 1.5; overflow-x: auto; padding: 6px 2px; text-align: center; }
+      .formula-row + .formula-row { margin-top: 0; }
+      .equation, .eq-group { display: inline-flex; flex-wrap: nowrap; align-items: center; vertical-align: middle; width: max-content; }
+      .equation { line-height: 1.35; padding: 4px 0; white-space: nowrap; }
+      .eq-token { display: inline-block; white-space: pre; }
+      .eq-op { display: inline-block; margin: 0 .13em; }
+      .eq-script { display: inline-flex; align-items: baseline; }
+      .eq-script sub { position: static; font-size: .7em; transform: translateY(.25em); line-height: 1.2; }
+      .eq-power { display: inline-flex; align-items: flex-start; padding-top: .35em; }
+      .eq-power sup { position: static; font-size: .7em; line-height: 1.2; margin-top: -.3em; margin-left: .06em; }
+      .formula-box .math-fraction, .equation .math-fraction { flex: none; margin: 0 .3em; line-height: 1.3; }
+      .formula-box .math-fraction > span, .equation .math-fraction > span { display: flex; justify-content: center; width: 100%; box-sizing: border-box; padding: .2em .3em; white-space: nowrap; }
+      .equation .math-sum { flex: none; margin: 0 .25em; }
+      .equation .math-symbol .eq-op { margin: 0; }
+      .eq-root { position: relative; display: inline-flex; align-items: stretch; padding: .12em 0 0 .8em; margin: 0 .12em; }
+      .eq-root > svg { position: absolute; left: 0; top: .12em; bottom: 0; width: .8em; height: calc(100% - .12em); overflow: visible; }
+      .eq-root > svg path { fill: none; stroke: currentColor; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+      .eq-radicand { display: inline-block; border-top: 1.5px solid currentColor; padding: .15em .15em .05em .08em; }
+      .article-content figure { margin: 28px 0; }
+      .article-content figure > svg { display: block; width: 100%; height: auto; }
+      .article-content figcaption { margin-top: 12px; color: var(--muted); font-size: .9rem; }
+      .example-points { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 18px; border: 1px solid var(--line); background: var(--paper); padding: 12px 16px; margin: 20px 0; }
+      .example-points > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; min-width: 0; }
+      .example-points code { margin: 0; overflow-wrap: anywhere; }
+      .table-scroll { overflow-x: auto; margin: 24px 0; }
+      .distance-nav { display: flex; flex-wrap: wrap; gap: 10px 20px; margin: 24px 0; }
+      .article-content h2 { scroll-margin-top: 90px; }
+      @media (max-width: 620px) {
+        .formula-box { gap: 4px 14px; padding: 8px; font-size: 1rem; }
+        .example-points { grid-template-columns: 1fr; }
+      }
+    </style></head>
+<body data-topic="ml-dl-concepts" data-post="distance-metrics"><div data-header></div><main class="shell article-layout"><article><header class="article-header">
+<p class="eyebrow">ML/DL Concepts</p>
+<h1>Distance Measures in Machine Learning</h1>
+<p class="distance-intro"><a href="#euclidean">Euclidean</a>, <a href="#manhattan">Manhattan</a>, <a href="#minkowski">Minkowski</a>, <a href="#cosine">cosine</a>, <a href="#hamming">Hamming</a>, and <a href="#jaccard">Jaccard</a> &mdash; six ways to decide what is close.</p><div class="meta"><time datetime="2026-09-08">September 8, 2026</time><span>&bull;</span><span>Ahamed Learning Notes</span></div></header><div class="article-content">
+<p>Distance defines what &ldquo;near&rdquo; means to a machine learning model. Straight-line separation, direction, mismatched positions, and set overlap answer different questions. Here are six common distances, with formulas and worked examples.</p>
+<div class="example-points"><div><strong>Point A</strong><code>(2, 3)</code></div><div><strong>Point B</strong><code>(5, 7)</code></div></div>
+<p>We will reuse these two points for Euclidean, Manhattan, and Minkowski distance, and compare their directions with cosine. The other examples show what changes when we compare measurements, documents, bits, or sets.</p>
+<p>For numeric vectors, write <var>x</var> = (x<sub>1</sub>, x<sub>2</sub>, &hellip;, x<sub>d</sub>) and <var>y</var> = (y<sub>1</sub>, y<sub>2</sub>, &hellip;, y<sub>d</sub>), where <var>d</var> is the number of features.</p>
+<h2 id="euclidean">1. Euclidean distance</h2>
+<p>Euclidean distance is the shortest straight-line distance between two points. It uses both the direction and size of the coordinate differences.</p>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">2</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">x</span><span class="eq-op">,</span><span class="eq-token">y</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="eq-root"><svg viewBox="0 0 24 60" preserveAspectRatio="none" aria-hidden="true"><path d="M1 35 L7 31 L13 56 L23 1"/></svg><span class="eq-radicand"><span class="eq-group"><span class="math-sum"><span class="math-limit"><span class="eq-token">d</span></span><span class="math-symbol"><span class="eq-op">∑</span></span><span class="math-limit"><span class="eq-group"><span class="eq-token">i</span><span class="eq-op">=</span><span class="eq-token">1</span></span></span></span><span class="eq-power"><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-script"><span class="eq-token">x</span><sub><span class="eq-token">i</span></sub></span><span class="eq-op">−</span><span class="eq-script"><span class="eq-token">y</span><sub><span class="eq-token">i</span></sub></span></span><span class="eq-op">)</span></span><sup><span class="eq-token">2</span></sup></span></span></span></span></span></span></div>
+</div>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-token">In 2D: </span><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">2</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">x</span><span class="eq-op">,</span><span class="eq-token">y</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="eq-root"><svg viewBox="0 0 24 60" preserveAspectRatio="none" aria-hidden="true"><path d="M1 35 L7 31 L13 56 L23 1"/></svg><span class="eq-radicand"><span class="eq-group"><span class="eq-power"><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-script"><span class="eq-token">x</span><sub><span class="eq-token">1</span></sub></span><span class="eq-op">−</span><span class="eq-script"><span class="eq-token">y</span><sub><span class="eq-token">1</span></sub></span></span><span class="eq-op">)</span></span><sup><span class="eq-token">2</span></sup></span><span class="eq-op">+</span><span class="eq-power"><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-script"><span class="eq-token">x</span><sub><span class="eq-token">2</span></sub></span><span class="eq-op">−</span><span class="eq-script"><span class="eq-token">y</span><sub><span class="eq-token">2</span></sub></span></span><span class="eq-op">)</span></span><sup><span class="eq-token">2</span></sup></span></span></span></span></span></span></div>
+</div>
+<h3>Example: the same two points</h3>
+<p>Let A = (2, 3) and B = (5, 7). Subtract coordinates first: 5 &minus; 2 = 3 and 7 &minus; 3 = 4.</p>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">2</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">A</span><span class="eq-op">,</span><span class="eq-token">B</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="eq-root"><svg viewBox="0 0 24 60" preserveAspectRatio="none" aria-hidden="true"><path d="M1 35 L7 31 L13 56 L23 1"/></svg><span class="eq-radicand"><span class="eq-group"><span class="eq-power"><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">5</span><span class="eq-op">−</span><span class="eq-token">2</span></span><span class="eq-op">)</span></span><sup><span class="eq-token">2</span></sup></span><span class="eq-op">+</span><span class="eq-power"><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">7</span><span class="eq-op">−</span><span class="eq-token">3</span></span><span class="eq-op">)</span></span><sup><span class="eq-token">2</span></sup></span></span></span></span></span></span></div>
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-op">=</span><span class="eq-root"><svg viewBox="0 0 24 60" preserveAspectRatio="none" aria-hidden="true"><path d="M1 35 L7 31 L13 56 L23 1"/></svg><span class="eq-radicand"><span class="eq-group"><span class="eq-token">9</span><span class="eq-op">+</span><span class="eq-token">16</span></span></span></span><span class="eq-op">=</span><span class="eq-token">5</span></span></span></div>
+</div>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-label="Euclidean distance: the straight line has length five"><title>Euclidean distance: the straight line has length five</title><rect width="720" height="300" rx="14" fill="#f6f4ee"/><g font-family="Arial, sans-serif" font-size="20" fill="#102a43"><path d="M110 40V240H360M160 40V240M210 40V240M260 40V240M310 40V240M110 190H360M110 140H360M110 90H360M110 40H360" fill="none" stroke="#d5ddd9"/><path d="M160 240L310 40" stroke="#d85e49" stroke-width="5"/><circle cx="160" cy="240" r="7"/><circle cx="310" cy="40" r="7"/><text x="60" y="270">A (2, 3)</text><text x="330" y="45">B (5, 7)</text><text x="420" y="140" fill="#b84232">Straight line = 5</text></g></svg><figcaption>The horizontal and vertical differences are 3 and 4; the diagonal is 5.</figcaption></figure>
+<h3>When it is useful</h3>
+<p>Use it when features are numeric and their magnitudes matter.</p>
+<ul><li>K-means clustering (its objective uses squared Euclidean distances)</li><li>KNN</li><li>Image pixel vectors</li><li>Embedding vectors in some settings</li><li>Geometric data and coordinates</li></ul>
+<p>Think of two locations on a map: what is the shortest straight-line distance between them?</p>
+
+<h3>Important problem: feature scale</h3>
+<p>Features: [age, salary].</p>
+<div class="example-points"><div><strong>Person A</strong><code>[25, 50000]</code></div><div><strong>Person B</strong><code>[30, 60000]</code></div></div>
+<section class="migration"><strong>Watch the feature scales</strong>
+<p>For [age, salary], compare [25, 50000] with [30, 60000]. The salary difference of 10000 overwhelms the age difference of 5. Scale features when comparable influence is appropriate; choose scaling that reflects the meaning of the data.</p></section>
+<h2 id="manhattan">2. Manhattan distance</h2>
+<p>Also called L<sub>1</sub>, taxicab, or city-block distance, Manhattan distance adds the absolute differences along each coordinate.</p>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">1</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">x</span><span class="eq-op">,</span><span class="eq-token">y</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="eq-group"><span class="math-sum"><span class="math-limit"><span class="eq-token">d</span></span><span class="math-symbol"><span class="eq-op">∑</span></span><span class="math-limit"><span class="eq-group"><span class="eq-token">i</span><span class="eq-op">=</span><span class="eq-token">1</span></span></span></span><span class="eq-group"><span class="eq-op">|</span><span class="eq-group"><span class="eq-script"><span class="eq-token">x</span><sub><span class="eq-token">i</span></sub></span><span class="eq-op">−</span><span class="eq-script"><span class="eq-token">y</span><sub><span class="eq-token">i</span></sub></span></span><span class="eq-op">|</span></span></span></span></span></div>
+</div>
+<h3>Example: the same two points</h3>
+<p>Again, A = (2, 3) and B = (5, 7).</p>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">1</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">A</span><span class="eq-op">,</span><span class="eq-token">B</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="eq-group"><span class="eq-op">|</span><span class="eq-group"><span class="eq-token">5</span><span class="eq-op">−</span><span class="eq-token">2</span></span><span class="eq-op">|</span></span><span class="eq-op">+</span><span class="eq-group"><span class="eq-op">|</span><span class="eq-group"><span class="eq-token">7</span><span class="eq-op">−</span><span class="eq-token">3</span></span><span class="eq-op">|</span></span><span class="eq-op">=</span><span class="eq-token">7</span></span></span></div>
+</div>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-label="Manhattan distance: three across plus four up"><title>Manhattan distance: three across plus four up</title><rect width="720" height="300" rx="14" fill="#f6f4ee"/><g font-family="Arial, sans-serif" font-size="20" fill="#102a43"><path d="M110 40V240H360M160 40V240M210 40V240M260 40V240M310 40V240M110 190H360M110 140H360M110 90H360M110 40H360" fill="none" stroke="#d5ddd9"/><path d="M160 240H310V40" fill="none" stroke="#238775" stroke-width="5"/><circle cx="160" cy="240" r="7"/><circle cx="310" cy="40" r="7"/><text x="60" y="270">A (2, 3)</text><text x="330" y="45">B (5, 7)</text><text x="220" y="225">3</text><text x="325" y="150">4</text><text x="420" y="140" fill="#176956">Grid route = 7</text></g></svg><figcaption>Following the coordinate directions gives 3 + 4 = 7.</figcaption></figure>
+<p>Imagine walking along city streets: travel 3 blocks horizontally and 4 vertically. The route has length 7, while the Euclidean diagonal has length 5.</p>
+<h3>When it is useful</h3>
+<p>Manhattan is useful when differences add independently along dimensions.</p>
+<ul><li>Grid-based movement</li><li>Sparse data</li><li>High-dimensional data</li><li>Some settings where large coordinate deviations should have less relative influence</li><li>Nearest-neighbor methods</li></ul>
+<p>The best choice depends on the task, and feature scaling still matters.</p>
+
+<h2 id="minkowski">3. Minkowski distance</h2>
+<p>Minkowski is a family of distances controlled by p. For a metric, use p &ge; 1.</p>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">p</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">x</span><span class="eq-op">,</span><span class="eq-token">y</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="eq-power"><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="math-sum"><span class="math-limit"><span class="eq-token">d</span></span><span class="math-symbol"><span class="eq-op">∑</span></span><span class="math-limit"><span class="eq-group"><span class="eq-token">i</span><span class="eq-op">=</span><span class="eq-token">1</span></span></span></span><span class="eq-power"><span class="eq-group"><span class="eq-op">|</span><span class="eq-group"><span class="eq-script"><span class="eq-token">x</span><sub><span class="eq-token">i</span></sub></span><span class="eq-op">−</span><span class="eq-script"><span class="eq-token">y</span><sub><span class="eq-token">i</span></sub></span></span><span class="eq-op">|</span></span><sup><span class="eq-token">p</span></sup></span></span><span class="eq-op">)</span></span><sup><span class="math-fraction"><span><span class="eq-token">1</span></span><span><span class="eq-token">p</span></span></span></sup></span></span></span></div>
+</div>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-token">p</span><span class="eq-op">=</span><span class="eq-token">1</span><span class="eq-op">:</span><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">1</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">x</span><span class="eq-op">,</span><span class="eq-token">y</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="eq-group"><span class="math-sum"><span class="math-limit"><span class="eq-token">d</span></span><span class="math-symbol"><span class="eq-op">∑</span></span><span class="math-limit"><span class="eq-group"><span class="eq-token">i</span><span class="eq-op">=</span><span class="eq-token">1</span></span></span></span><span class="eq-group"><span class="eq-op">|</span><span class="eq-group"><span class="eq-script"><span class="eq-token">x</span><sub><span class="eq-token">i</span></sub></span><span class="eq-op">−</span><span class="eq-script"><span class="eq-token">y</span><sub><span class="eq-token">i</span></sub></span></span><span class="eq-op">|</span></span></span><span class="eq-op">=</span><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">Manhattan</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">x</span><span class="eq-op">,</span><span class="eq-token">y</span></span><span class="eq-op">)</span></span></span></span></div>
+</div>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-token">p</span><span class="eq-op">=</span><span class="eq-token">2</span><span class="eq-op">:</span><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">2</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">x</span><span class="eq-op">,</span><span class="eq-token">y</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="eq-root"><svg viewBox="0 0 24 60" preserveAspectRatio="none" aria-hidden="true"><path d="M1 35 L7 31 L13 56 L23 1"/></svg><span class="eq-radicand"><span class="eq-group"><span class="math-sum"><span class="math-limit"><span class="eq-token">d</span></span><span class="math-symbol"><span class="eq-op">∑</span></span><span class="math-limit"><span class="eq-group"><span class="eq-token">i</span><span class="eq-op">=</span><span class="eq-token">1</span></span></span></span><span class="eq-power"><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-script"><span class="eq-token">x</span><sub><span class="eq-token">i</span></sub></span><span class="eq-op">−</span><span class="eq-script"><span class="eq-token">y</span><sub><span class="eq-token">i</span></sub></span></span><span class="eq-op">)</span></span><sup><span class="eq-token">2</span></sup></span></span></span></span><span class="eq-op">=</span><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">Euclidean</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">x</span><span class="eq-op">,</span><span class="eq-token">y</span></span><span class="eq-op">)</span></span></span></span></div>
+</div>
+<figure>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" role="img" aria-labelledby="minkowski-title minkowski-desc">
+    <title id="minkowski-title">Same points, different values of p</title>
+    <desc id="minkowski-desc">For A equals (2, 3) and B equals (5, 7), the absolute coordinate differences are 3 and 4. Bars on the same zero-based scale compare Minkowski distances: p equals 1 gives 7, p equals 2 gives 5, and p equals 3 gives approximately 4.50.</desc>
+    <rect width="720" height="400" rx="14" fill="#f6f4ee"/>
+    <g font-family="Arial, sans-serif" fill="#102a43">
+      <text x="28" y="38" font-size="23" font-weight="700">Same points. Change only p.</text>
+      <text x="28" y="73" font-size="19">A = (2, 3)     B = (5, 7)</text>
+      <text x="28" y="103" font-size="19">Coordinate differences: |5 - 2| = 3 and |7 - 3| = 4</text>
+      <g stroke="#d5ddd9" stroke-width="1">
+        <path d="M185 133V329 M245 133V329 M305 133V329 M365 133V329 M425 133V329 M485 133V329 M545 133V329 M605 133V329"/>
+      </g>
+      <text x="28" y="161" font-size="20" font-weight="700">p = 1</text>
+      <text x="28" y="184" font-size="16">Manhattan</text>
+      <rect x="185" y="143" width="420" height="37" rx="4" fill="#238775"/>
+      <text x="620" y="169" font-size="22" font-weight="700">7</text>
+      <text x="28" y="229" font-size="20" font-weight="700">p = 2</text>
+      <text x="28" y="252" font-size="16">Euclidean</text>
+      <rect x="185" y="211" width="300" height="37" rx="4" fill="#d85e49"/>
+      <text x="500" y="237" font-size="22" font-weight="700">5</text>
+      <text x="28" y="297" font-size="20" font-weight="700">p = 3</text>
+      <text x="28" y="320" font-size="16">Minkowski</text>
+      <rect x="185" y="279" width="269.8765" height="37" rx="4" fill="#7062ad"/>
+      <text x="470" y="305" font-size="22" font-weight="700">&#8776; 4.50</text>
+      <path d="M185 329H605" stroke="#82968c"/>
+      <g font-size="16" text-anchor="middle">
+        <text x="185" y="352">0</text><text x="245" y="352">1</text>
+        <text x="305" y="352">2</text><text x="365" y="352">3</text>
+        <text x="425" y="352">4</text><text x="485" y="352">5</text>
+        <text x="545" y="352">6</text><text x="605" y="352">7</text>
+        <text x="395" y="382" font-size="18">Distance (same scale for every bar)</text>
+      </g>
+    </g>
+  </svg>
+  <figcaption>The coordinate differences stay 3 and 4. Changing p gives distance 7 at p = 1, 5 at p = 2, and approximately 4.50 at p = 3. Higher p gives the larger difference more relative influence; it does not mean the resulting distance increases.</figcaption>
+</figure>
+<h3>Example with p = 3</h3>
+<p>Keep A = (2, 3) and B = (5, 7). The absolute differences remain 3 and 4; now cube them: 3<sup>3</sup> = 27 and 4<sup>3</sup> = 64.</p>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">3</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">A</span><span class="eq-op">,</span><span class="eq-token">B</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="eq-power"><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-power"><span class="eq-group"><span class="eq-op">|</span><span class="eq-group"><span class="eq-token">5</span><span class="eq-op">−</span><span class="eq-token">2</span></span><span class="eq-op">|</span></span><sup><span class="eq-token">3</span></sup></span><span class="eq-op">+</span><span class="eq-power"><span class="eq-group"><span class="eq-op">|</span><span class="eq-group"><span class="eq-token">7</span><span class="eq-op">−</span><span class="eq-token">3</span></span><span class="eq-op">|</span></span><sup><span class="eq-token">3</span></sup></span></span><span class="eq-op">)</span></span><sup><span class="math-fraction"><span><span class="eq-token">1</span></span><span><span class="eq-token">3</span></span></span></sup></span></span></span></div>
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-op">=</span><span class="eq-power"><span class="eq-token">91</span><sup><span class="math-fraction"><span><span class="eq-token">1</span></span><span><span class="eq-token">3</span></span></span></sup></span><span class="eq-op">≈</span><span class="eq-token">4.50</span></span></span></div>
+</div>
+<div class="formula-box"><div class="formula-row">(27 + 64)<sup><span class="math-fraction"><span>1</span><span>3</span></span></sup> = 91<sup><span class="math-fraction"><span>1</span><span>3</span></span></sup> &asymp; 4.50</div></div>
+<p>Higher p gives the largest coordinate differences more relative influence. At p = 1, each absolute difference contributes additively. KNN can use p to choose the geometry of its neighborhood.</p>
+<h2 id="cosine">4. Cosine distance</h2>
+<p>Cosine compares direction rather than magnitude. For two nonzero vectors, first calculate cosine similarity, then subtract it from 1.</p>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-token">similarity</span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">x</span><span class="eq-op">,</span><span class="eq-token">y</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="math-fraction"><span><span class="eq-group"><span class="eq-token">x</span><span class="eq-op">·</span><span class="eq-token">y</span></span></span><span><span class="eq-group"><span class="eq-script"><span class="eq-group"><span class="eq-op">‖</span><span class="eq-token">x</span><span class="eq-op">‖</span></span><sub><span class="eq-token">2</span></sub></span><span class="eq-script"><span class="eq-group"><span class="eq-op">‖</span><span class="eq-token">y</span><span class="eq-op">‖</span></span><sub><span class="eq-token">2</span></sub></span></span></span></span></span></span></div>
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-group"><span class="eq-token">x</span><span class="eq-op">·</span><span class="eq-token">y</span></span><span class="eq-op">=</span><span class="math-sum"><span class="math-limit"><span class="eq-token">d</span></span><span class="math-symbol"><span class="eq-op">∑</span></span><span class="math-limit"><span class="eq-group"><span class="eq-token">i</span><span class="eq-op">=</span><span class="eq-token">1</span></span></span></span><span class="eq-group"><span class="eq-script"><span class="eq-token">x</span><sub><span class="eq-token">i</span></sub></span><span class="eq-script"><span class="eq-token">y</span><sub><span class="eq-token">i</span></sub></span></span></span></span></div>
+</div>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">cos</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">x</span><span class="eq-op">,</span><span class="eq-token">y</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="eq-token">1</span><span class="eq-op">−</span><span class="eq-token">similarity</span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">x</span><span class="eq-op">,</span><span class="eq-token">y</span></span><span class="eq-op">)</span></span></span></span></div>
+</div>
+<h3>Example: directions of the same two points</h3>
+<p>For A = (2, 3) and B = (5, 7), the dot product is 2 &times; 5 + 3 &times; 7 = 31.</p>
+<div class="formula-box"><div class="formula-row"><span class="equation">similarity(A, B) = <span class="math-fraction"><span>31</span><span><span class="eq-root"><svg viewBox="0 0 24 60" preserveAspectRatio="none" aria-hidden="true"><path d="M1 35 L7 31 L13 56 L23 1"/></svg><span class="eq-radicand">2<sup>2</sup> + 3<sup>2</sup></span></span> &times; <span class="eq-root"><svg viewBox="0 0 24 60" preserveAspectRatio="none" aria-hidden="true"><path d="M1 35 L7 31 L13 56 L23 1"/></svg><span class="eq-radicand">5<sup>2</sup> + 7<sup>2</sup></span></span></span></span></span></div><div class="formula-row"><span class="equation">= <span class="math-fraction"><span>31</span><span><span class="eq-root"><svg viewBox="0 0 24 60" preserveAspectRatio="none" aria-hidden="true"><path d="M1 35 L7 31 L13 56 L23 1"/></svg><span class="eq-radicand">13</span></span> &times; <span class="eq-root"><svg viewBox="0 0 24 60" preserveAspectRatio="none" aria-hidden="true"><path d="M1 35 L7 31 L13 56 L23 1"/></svg><span class="eq-radicand">74</span></span></span></span> &asymp; 0.99948</span></div><div class="formula-row">Cosine distance &asymp; 1 &minus; 0.99948 = 0.00052</div></div>
+<p>The points are 5 Euclidean units apart, but their vectors from the origin point in nearly the same direction.</p>
+<h3>Same direction, different lengths</h3>
+<p>A = [1, 2] and B = [2, 4] = 2A. Their Euclidean distance is <span class="equation"><span class="eq-group"><span class="eq-root"><svg viewBox="0 0 24 60" preserveAspectRatio="none" aria-hidden="true"><path d="M1 35 L7 31 L13 56 L23 1"/></svg><span class="eq-radicand"><span class="eq-token">5</span></span></span></span></span>, but their direction is identical.</p>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-token">similarity</span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">A</span><span class="eq-op">,</span><span class="eq-token">B</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="math-fraction"><span><span class="eq-token">10</span></span><span><span class="eq-group"><span class="eq-root"><svg viewBox="0 0 24 60" preserveAspectRatio="none" aria-hidden="true"><path d="M1 35 L7 31 L13 56 L23 1"/></svg><span class="eq-radicand"><span class="eq-token">5</span></span></span><span class="eq-op">×</span><span class="eq-root"><svg viewBox="0 0 24 60" preserveAspectRatio="none" aria-hidden="true"><path d="M1 35 L7 31 L13 56 L23 1"/></svg><span class="eq-radicand"><span class="eq-token">20</span></span></span></span></span></span><span class="eq-op">=</span><span class="eq-token">1</span></span></span></div>
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">cos</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">A</span><span class="eq-op">,</span><span class="eq-token">B</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="eq-token">0</span></span></span></div>
+</div>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-label="Cosine distance: two vectors on the same ray"><title>Cosine distance: two vectors on the same ray</title><rect width="720" height="300" rx="14" fill="#f6f4ee"/><g font-family="Arial, sans-serif" font-size="20" fill="#102a43"><path d="M90 250H430M90 250V25" stroke="#b5c1bb"/><path d="M90 250L290 50" stroke="#238775" stroke-width="7"/><path d="M90 250L190 150" stroke="#d85e49" stroke-width="7"/><circle cx="190" cy="150" r="7"/><circle cx="290" cy="50" r="7"/><text x="205" y="165">A = [1, 2]</text><text x="310" y="55">B = [2, 4]</text><text x="445" y="175">Same direction</text><text x="445" y="210">Cosine distance = 0</text></g></svg><figcaption>Both arrows start at the origin. Doubling a vector changes its length, but preserves its direction.</figcaption></figure>
+<h3>Real example: documents</h3>
+<p>Vocabulary: [AI, model, biology].</p>
+<div class="example-points"><div><strong>Document A</strong><code>[10, 20, 0]</code></div><div><strong>Document B</strong><code>[100, 200, 0]</code></div></div>
+<p>Using the vocabulary [AI, model, biology], represent document A as [10, 20, 0] and B as [100, 200, 0]. B has ten times the counts, but exactly the same proportions. Their cosine similarity is exactly 1 and their cosine distance is 0.</p>
+<div class="formula-box"><div class="formula-row"><span class="equation">Euclidean = <span class="eq-root"><svg viewBox="0 0 24 60" preserveAspectRatio="none" aria-hidden="true"><path d="M1 35 L7 31 L13 56 L23 1"/></svg><span class="eq-radicand">(100 &minus; 10)<sup>2</sup> + (200 &minus; 20)<sup>2</sup> + 0<sup>2</sup></span></span></span></div><div class="formula-row"><span class="equation">= <span class="eq-root"><svg viewBox="0 0 24 60" preserveAspectRatio="none" aria-hidden="true"><path d="M1 35 L7 31 L13 56 L23 1"/></svg><span class="eq-radicand">40500</span></span> &asymp; 201.25</span></div><div class="formula-row">Cosine similarity = 1; cosine distance = 0</div></div>
+<p>Cosine is widely used in:</p>
+<ul><li>Document similarity and NLP</li><li>Embeddings and semantic search</li><li>Recommendation systems</li><li>Image embeddings, including CLIP embeddings</li></ul>
+<p>Euclidean asks: how far apart are these points? Cosine asks: are these vectors pointing in the same direction?</p>
+<section class="migration"><strong>Direction has a few caveats</strong>
+<p>A zero vector has no direction, so the formula is undefined for it. Cosine distance ranges from 0 to 2 for general real vectors; nonnegative word counts restrict it to 0 through 1. The common definition 1 &minus; cosine similarity is not a mathematical metric because it can violate the triangle inequality.</p></section>
+<h2 id="hamming">5. Hamming distance</h2>
+<p>For equal-length sequences, count the positions where the values differ.</p>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">H</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">x</span><span class="eq-op">,</span><span class="eq-token">y</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="math-sum"><span class="math-limit"><span class="eq-token">d</span></span><span class="math-symbol"><span class="eq-op">∑</span></span><span class="math-limit"><span class="eq-group"><span class="eq-token">i</span><span class="eq-op">=</span><span class="eq-token">1</span></span></span></span><span class="eq-group"><span class="eq-token">I</span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-script"><span class="eq-token">x</span><sub><span class="eq-token">i</span></sub></span><span class="eq-op">≠</span><span class="eq-script"><span class="eq-token">y</span><sub><span class="eq-token">i</span></sub></span></span><span class="eq-op">)</span></span></span></span></span></div>
+</div>
+<p>The indicator I is 1 when the values differ and 0 otherwise.</p>
+<h3>Example</h3>
+<p>A = [1, 0, 1, 1, 0] and B = [1, 1, 1, 0, 0]. Only positions 2 and 4 differ.</p>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-label="Hamming distance: positions two and four differ"><title>Hamming distance: positions two and four differ</title><rect width="720" height="300" rx="14" fill="#f6f4ee"/><g font-family="Arial, sans-serif" font-size="20" fill="#102a43"><text x="35" y="93">A</text><text x="35" y="163">B</text><rect x="110" y="48" width="75" height="135" rx="10" fill="#d6eee8"/><text x="140" y="93">1</text><text x="140" y="163">1</text><text x="140" y="217">0</text><rect x="220" y="48" width="75" height="135" rx="10" fill="#ffe1d9"/><text x="250" y="93">0</text><text x="250" y="163">1</text><text x="250" y="217">1</text><rect x="330" y="48" width="75" height="135" rx="10" fill="#d6eee8"/><text x="360" y="93">1</text><text x="360" y="163">1</text><text x="360" y="217">0</text><rect x="440" y="48" width="75" height="135" rx="10" fill="#ffe1d9"/><text x="470" y="93">1</text><text x="470" y="163">0</text><text x="470" y="217">1</text><rect x="550" y="48" width="75" height="135" rx="10" fill="#d6eee8"/><text x="580" y="93">0</text><text x="580" y="163">0</text><text x="580" y="217">0</text><text x="175" y="270">Mismatch count: 0 + 1 + 0 + 1 + 0 = 2</text></g></svg><figcaption>Coral columns differ; green columns match. Each mismatch contributes 1.</figcaption></figure>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">H</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">A</span><span class="eq-op">,</span><span class="eq-token">B</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="eq-token">2</span></span></span></div>
+</div>
+<h3>When it is useful</h3>
+<p>Hamming is useful for:</p>
+<ul><li>Binary strings and bit vectors</li><li>Error-correcting codes</li><li>Aligned DNA sequences of equal length</li><li>Categorical vectors</li><li>Hashing</li></ul>
+
+
+<h3>Bit-string example</h3>
+<div class="example-points"><div><strong>String A</strong><code>1011101</code></div><div><strong>String B</strong><code>1001001</code></div></div>
+<p>Comparing the seven-bit strings, positions 3 and 5 differ: two bits must change.</p>
+<div class="formula-box"><div class="formula-row">Hamming distance = 0 + 0 + 1 + 0 + 1 + 0 + 0 = 2</div></div>
+<p>Some implementations return the mismatch <em>proportion</em> instead of the count. For the five-position example, <em style="background-color: yellow; padding: 5px;">Normalized Hamming distance</em> is <span class="equation"><span class="eq-group"><span class="math-fraction"><span><span class="eq-token">2</span></span><span><span class="eq-token">5</span></span></span><span class="eq-op">=</span><span class="eq-token">0.4</span></span></span>.</p>
+<h2 id="jaccard">6. Jaccard distance</h2>
+<p>Jaccard compares sets or binary presence/absence data. It measures shared items relative to all distinct items present in either set.</p>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-token">J</span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">A</span><span class="eq-op">,</span><span class="eq-token">B</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="math-fraction"><span><span class="eq-group"><span class="eq-op">|</span><span class="eq-group"><span class="eq-token">A</span><span class="eq-op">∩</span><span class="eq-token">B</span></span><span class="eq-op">|</span></span></span><span><span class="eq-group"><span class="eq-op">|</span><span class="eq-group"><span class="eq-token">A</span><span class="eq-op">∪</span><span class="eq-token">B</span></span><span class="eq-op">|</span></span></span></span></span></span></div>
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">J</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">A</span><span class="eq-op">,</span><span class="eq-token">B</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="eq-token">1</span><span class="eq-op">−</span><span class="eq-token">J</span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">A</span><span class="eq-op">,</span><span class="eq-token">B</span></span><span class="eq-op">)</span></span></span></span></div>
+</div>
+<h3>Example: watched movies</h3>
+<div class="example-points"><div><strong>User A</strong><code>{Avatar, Titanic, Interstellar}</code></div><div><strong>User B</strong><code>{Titanic, Interstellar, Dune}</code></div></div>
+<p>A = {Avatar, Titanic, Interstellar}<br>B = {Titanic, Interstellar, Dune}</p>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-label="Jaccard distance: two shared movies out of four unique movies"><title>Jaccard distance: two shared movies out of four unique movies</title><rect width="720" height="300" rx="14" fill="#f6f4ee"/><g font-family="Arial, sans-serif" font-size="20" fill="#102a43"><circle cx="305" cy="155" r="120" fill="#ffe1d9" stroke="#d85e49"/><circle cx="415" cy="155" r="120" fill="#d6eee8" fill-opacity=".65" stroke="#238775"/><text x="245" y="30" text-anchor="middle">User A</text><text x="475" y="30" text-anchor="middle">User B</text><text x="240" y="160" text-anchor="middle">Avatar</text><text x="360" y="145" font-size="17" text-anchor="middle">Titanic</text><text x="360" y="176" font-size="17" text-anchor="middle">Interstellar</text><text x="480" y="160" text-anchor="middle">Dune</text></g></svg><figcaption>Intersection = 2 movies; union = 4 movies. Two shared movies out of four unique movies give Jaccard distance 0.5.</figcaption></figure>
+<p>The intersection is {Titanic, Interstellar}, with 2 movies. The union is {Avatar, Titanic, Interstellar, Dune}, with 4 movies.</p>
+<div class="formula-box">
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-token">J</span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">A</span><span class="eq-op">,</span><span class="eq-token">B</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="math-fraction"><span><span class="eq-token">2</span></span><span><span class="eq-token">4</span></span></span><span class="eq-op">=</span><span class="eq-token">0.5</span></span></span></div>
+<div class="formula-row"><span class="equation"><span class="eq-group"><span class="eq-script"><span class="eq-token">d</span><sub><span class="eq-token">J</span></sub></span><span class="eq-group"><span class="eq-op">(</span><span class="eq-group"><span class="eq-token">A</span><span class="eq-op">,</span><span class="eq-token">B</span></span><span class="eq-op">)</span></span><span class="eq-op">=</span><span class="eq-token">1</span><span class="eq-op">−</span><span class="eq-token">0.5</span><span class="eq-op">=</span><span class="eq-token">0.5</span></span></span></div>
+</div>
+<h3>When it is useful</h3>
+<p>Jaccard is useful for:</p>
+<ul><li>Recommendation systems and item overlap</li><li>Document word sets</li><li>Binary feature vectors</li><li>Customer purchase histories</li><li>Biological species sets</li><li>Overlap between the members of two clusters</li></ul>
+<p>It focuses on what is present in at least one set.</p>
+<p>For binary features, shared zeros do not count toward overlap: two users both skipping a movie adds no shared interest. If both sets are empty, the ratio is <span class="equation"><span class="eq-group"><span class="math-fraction"><span><span class="eq-token">0</span></span><span><span class="eq-token">0</span></span></span></span></span>; a common convention defines their similarity as 1 and distance as 0.</p>
+<section class="migration"><strong>Choose what &ldquo;similar&rdquo; should mean</strong>
+<p>Euclidean measures straight-line separation. Manhattan adds coordinate differences. Minkowski controls this geometry with p. Cosine compares directions, Hamming counts mismatches, and Jaccard compares set overlap.</p></section></div></article><aside class="article-sidebar">
+<h2>Continue learning</h2><div class="related" data-related></div><div class="sidebar-note"><strong>Same points, different distances</strong>
+<p>A = (2, 3), B = (5, 7)<br>Euclidean = 5<br>Manhattan = 7<br>Minkowski (p = 3) &asymp; 4.50</p></div></aside></main><div data-footer></div>    <script src="../../../assets/js/data/statistics.js"></script>
+    <script src="../../../assets/js/data/linear-algebra.js"></script>
+    <script src="../../../assets/js/data/oop.js"></script>
+    <script src="../../../assets/js/data/dsa.js"></script>
+    <script src="../../../assets/js/data/sql.js"></script>
+    <script src="../../../assets/js/data/python-concepts.js"></script>
+    <script src="../../../assets/js/data/ml-dl-concepts.js"></script>
+    <script src="../../../assets/js/site.js"></script>
+  </body>
+</html>
