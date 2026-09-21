@@ -1,6 +1,19 @@
 window.BLOG_POSTS = window.BLOG_POSTS || [];
 
 window.BLOG_POSTS.push({
+  slug: "roc-auc",
+  title: "ROC–AUC, From Confusion Matrix to Curve",
+  description: "Build an ROC curve from thresholds and confusion matrices, calculate AUC, and learn what the score means.",
+  topic: "ML/DL Concepts",
+  topicSlug: "ml-dl-concepts",
+  date: "Sep 21, 2026",
+  symbol: "AUC",
+  color: "mint",
+  thumbnail: "assets/images/ml-dl-concepts/roc-auc-thumbnail.svg",
+  path: "posts/ml-dl-concepts/roc-auc/",
+});
+
+window.BLOG_POSTS.push({
   slug: "distance-metrics",
   title: "Distance Measures in Machine Learning",
   description: "Explore Euclidean, Manhattan, Minkowski, cosine, Hamming, and Jaccard distances with clear formulas, worked examples, and visuals.",

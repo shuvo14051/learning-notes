@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">ROC curve for six emails</title>
+  <desc id="desc">Seven threshold rows give seven points. Threshold 0.70 gives FPR one third and TPR two thirds. The area under the curve is seven ninths, approximately 0.78.</desc>
+  <rect width="1200" height="675" rx="20" fill="#f6f4ee"/>
+  <rect x="175" y="75" width="535" height="515" rx="20" fill="#fff"/>
+  <g stroke="#e1e7e2" stroke-width="1.5"><path d="M240 535H660M240 115V535"/><path d="M240 325H660M450 115V535"/><path d="M240 115H660M660 115V535"/></g>
+  <path d="M240 535 L240 395 L380 395 L380 255 L380 115 L520 115 L660 115L660 535Z" fill="#d3eee4"/>
+  <path d="M240 535L660 115" stroke="#c59d8c" stroke-width="3" stroke-dasharray="9 9"/>
+  <path d="M240 115V535H660" fill="none" stroke="#526b71" stroke-width="3"/>
+  <path d="M240 535 L240 395 L380 395 L380 255 L380 115 L520 115 L660 115" fill="none" stroke="#176956" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+  <g fill="#fff" stroke="#176956" stroke-width="3"><circle cx="240" cy="535" r="6"/><circle cx="240" cy="395" r="6"/><circle cx="380" cy="395" r="6"/><circle cx="380" cy="255" r="6"/><circle cx="380" cy="115" r="6"/><circle cx="520" cy="115" r="6"/><circle cx="660" cy="115" r="6"/></g>
+  <path d="M240 255H380V535" fill="none" stroke="#d56b50" stroke-width="2" stroke-dasharray="5 6"/>
+  <circle cx="380" cy="255" r="10" fill="#d56b50" stroke="#fff" stroke-width="3"/>
+  <g font-family="Arial, sans-serif" fill="#102a43" font-size="22">
+    <text x="240" y="568" text-anchor="middle">0</text><text x="221" y="543" text-anchor="end">0</text><text x="450" y="568" text-anchor="middle">0.5</text><text x="221" y="333" text-anchor="end">0.5</text><text x="660" y="568" text-anchor="middle">1</text><text x="221" y="123" text-anchor="end">1</text>
+    <text x="450" y="622" text-anchor="middle" font-size="25">FPR: false alarms</text>
+    <text transform="translate(137 325) rotate(-90)" text-anchor="middle" font-size="25">TPR: spam caught</text>
+    <text x="754" y="170" font-size="36" font-weight="700">One row, one point.</text>
+    <rect x="754" y="220" width="370" height="170" rx="14" fill="#f6e8e0"/>
+    <circle cx="782" cy="260" r="8" fill="#d56b50"/>
+    <text x="802" y="269" font-size="27" font-weight="700" fill="#a33f2e">Threshold 0.70</text>
+    <text x="779" y="319" font-size="25">FPR ≈ 0.33</text>
+    <text x="779" y="361" font-size="25">TPR ≈ 0.67</text>
+    <text x="754" y="475" font-size="38" font-weight="700">AUC ≈ 0.78</text>
+    <text x="754" y="517" font-size="23" fill="#526b71">The shaded area</text>
+  </g>
+</svg>

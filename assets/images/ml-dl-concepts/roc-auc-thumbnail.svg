@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">ROC curve and its area</title>
+  <desc id="desc">An illustrative smooth teal ROC curve arches toward the upper left, with a softly shaded area beneath it and a dashed chance diagonal.</desc>
+  <defs>
+    <linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#52bba1" stop-opacity=".38"/><stop offset="1" stop-color="#52bba1" stop-opacity=".06"/></linearGradient>
+    <linearGradient id="curve" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#167565"/><stop offset="1" stop-color="#2ea58e"/></linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="#f6f4ee"/>
+  <rect x="105" y="68" width="990" height="540" rx="28" fill="#fff" stroke="#e0e4df" stroke-width="2"/>
+  <path d="M205 430H1000M205 335H1000M205 240H1000M404 145V525M603 145V525M802 145V525" fill="none" stroke="#edf1ee" stroke-width="2"/>
+  <path d="M205 525C225 300 310 205 450 174S800 145 1000 145V525Z" fill="url(#area)"/>
+  <path d="M205 525L1000 145" fill="none" stroke="#d5aa96" stroke-width="3" stroke-dasharray="10 12"/>
+  <path d="M205 525H1000M205 525V145" fill="none" stroke="#526b71" stroke-width="3" stroke-linecap="round"/>
+  <path d="M205 525C225 300 310 205 450 174S800 145 1000 145" fill="none" stroke="url(#curve)" stroke-width="11" stroke-linecap="round"/>
+  <circle cx="450" cy="174" r="23" fill="#2ea58e" opacity=".12"/>
+  <circle cx="450" cy="174" r="9" fill="#fff" stroke="#218d78" stroke-width="5"/>
+  <g font-family="Arial, sans-serif" fill="#102a43" font-weight="700"><text x="135" y="123" font-size="42">ROC-AUC</text><text x="880" y="584" font-size="23">FPR</text><text x="153" y="213" font-size="23" transform="rotate(-90 153 213)">TPR</text></g>
+</svg>

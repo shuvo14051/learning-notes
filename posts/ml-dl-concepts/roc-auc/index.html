@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en" data-root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Learn ROC and AUC from confusion matrices, thresholds, TPR, FPR, sensitivity, and specificity with a complete worked example." />
+  <title>ROC–AUC, From Confusion Matrix to Curve | Ahamed Learning Notes</title>
+  <link rel="stylesheet" href="../../../assets/css/style.css" />
+  <style>
+    .table-scroll { overflow-x:auto; margin:24px 0; }
+    .roc-figure { margin:28px 0; }
+    .roc-figure img { display:block; width:100%; height:auto; border-radius:14px; }
+    .roc-figure figcaption { margin-top:12px; color:var(--muted); font-size:.9rem; }
+    .formula-card { padding:18px 22px; margin:22px 0; background:var(--paper); border:1px solid var(--line); line-height:1.8; }
+    .formula-card strong { color:#176956; }
+    .formula-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+    .formula-row + .formula-row { margin-top:18px; }
+    .math-fraction { flex-shrink:0; line-height:1.4; }
+    .math-fraction > span:first-child { align-self:stretch; text-align:center; }
+    .article-content table { table-layout:auto; }
+    .article-content table th:first-child, .article-content table td:first-child { width:auto; }
+    .article-content .confusion-matrix { width:auto; margin:0; }
+    .article-content .confusion-matrix th, .article-content .confusion-matrix td { padding:10px 12px; }
+    .article-content th, .article-content td { white-space:nowrap; }
+    .article-content .compact-table { width:auto; margin:0; font-size:13px; font-variant-numeric:tabular-nums; }
+    .article-content .compact-table th, .article-content .compact-table td { padding:7px 11px; text-align:center; }
+    .article-content .compact-table th { font-size:11px; letter-spacing:.02em; }
+    .article-content .compact-table tbody tr.selected-threshold { background:#dcefe8; font-weight:700; }
+    .outcome-correct { color:#176956; font-weight:700; }
+    .outcome-error { color:#a33f2e; font-weight:700; }
+  </style>
+</head>
+<body data-topic="ml-dl-concepts" data-post="roc-auc">
+  <div data-header></div>
+  <main class="shell article-layout">
+    <article>
+      <header class="article-header">
+        <p class="eyebrow">ML/DL Concepts</p>
+        <h1>ROC–AUC, From Confusion Matrix to Curve</h1>
+        <p>Move a classification threshold, watch the errors change, and measure how well the scores separate two classes.</p>
+        <div class="meta"><time datetime="2026-09-21">September 21, 2026</time><span>&bull;</span><span>Ahamed Learning Notes</span></div>
+      </header>
+      <div class="article-content">
+        <h2>Start with a confusion matrix</h2>
+        <p>Think of a spam filter. Here, <strong>positive means spam</strong> and <strong>negative means not spam</strong>. A confusion matrix counts which predictions were right and which were wrong.</p>
+        <div class="table-scroll"><table class="confusion-matrix">
+          <thead><tr><th></th><th>Actually spam</th><th>Actually not spam</th></tr></thead>
+          <tbody>
+            <tr><th>Predicted spam</th><td>TP: spam caught</td><td>FP: false alarm</td></tr>
+            <tr><th>Predicted not spam</th><td>FN: spam missed</td><td>TN: correctly left alone</td></tr>
+          </tbody>
+        </table></div>
+        <ul>
+          <li><strong>TPR / sensitivity:</strong> how much of the actual spam did we catch?</li>
+          <li><strong>FPR:</strong> how much of the non-spam did we wrongly mark as spam?</li>
+          <li><strong>Specificity:</strong> how much of the non-spam did we correctly leave alone?</li>
+        </ul>
+        <div class="formula-card">
+          <strong class="formula-row"><span>TPR = sensitivity =</span><span class="math-fraction" role="math" aria-label="TP divided by TP plus FN"><span>TP</span><span>TP + FN</span></span></strong>
+          <strong class="formula-row"><span>FPR =</span><span class="math-fraction" role="math" aria-label="FP divided by FP plus TN"><span>FP</span><span>FP + TN</span></span></strong>
+          <strong class="formula-row"><span>Specificity =</span><span class="math-fraction" role="math" aria-label="TN divided by TN plus FP"><span>TN</span><span>TN + FP</span></span><span>= 1 &minus; FPR</span></strong>
+        </div>
+
+       
+        <h2>Change the threshold</h2>
+        <p>Now lower the threshold to <strong>0.60</strong>. Email D becomes a spam prediction too. D really is spam, so TP rises from 2 to 3, and FN falls from 1 to 0. We now catch all the spam: <strong>TPR becomes 1.00</strong>. The false alarm count stays the same.</p>
+        <p>To see every possible change, start at 1.00, above all six probabilities, then lower the threshold to each probability in the first table. The model's probabilities stay the same; only the cutoff changes.</p>
+        <div class="table-scroll"><table class="compact-table">
+          <thead><tr><th scope="col">Threshold</th><th scope="col">TP</th><th scope="col">FP</th><th scope="col">FN</th><th scope="col">TN</th><th scope="col">FPR</th><th scope="col">TPR</th></tr></thead>
+          <tbody>
+            <tr><td>1.00</td><td>0</td><td>0</td><td>3</td><td>3</td><td>0.00</td><td>0.00</td></tr>
+            <tr><td>0.90</td><td>1</td><td>0</td><td>2</td><td>3</td><td>0.00</td><td>0.33</td></tr>
+            <tr><td>0.80</td><td>1</td><td>1</td><td>2</td><td>2</td><td>0.33</td><td>0.33</td></tr>
+            <tr class="selected-threshold"><td>0.70</td><td>2</td><td>1</td><td>1</td><td>2</td><td>0.33</td><td>0.67</td></tr>
+            <tr><td>0.60</td><td>3</td><td>1</td><td>0</td><td>2</td><td>0.33</td><td>1.00</td></tr>
+            <tr><td>0.40</td><td>3</td><td>2</td><td>0</td><td>1</td><td>0.67</td><td>1.00</td></tr>
+            <tr><td>0.20</td><td>3</td><td>3</td><td>0</td><td>0</td><td>1.00</td><td>1.00</td></tr>
+          </tbody>
+        </table></div>
+        <p>Each row counts all six emails again. The green row is our original threshold of 0.70. Rates are rounded to two decimal places.</p>
+
+        <h2>Draw the ROC curve</h2>
+        <p><strong>ROC</strong> stands for receiver operating characteristic. It shows how catching more spam can also create more false alarms.</p>
+        <ol>
+          <li>Put <strong>FPR along the bottom</strong> and <strong>TPR up the side</strong>.</li>
+          <li>For each threshold row, draw one point using its FPR and TPR.</li>
+          <li>Connect the points in table order.</li>
+        </ol>
+        <p>At threshold 0.70, the point is about <strong>(0.33, 0.67)</strong>. At 0.60, it moves up to <strong>(0.33, 1.00)</strong>: we catch more spam without adding a false alarm. At 0.40, it moves right to <strong>(0.67, 1.00)</strong>: E becomes another false alarm.</p>
+        <figure class="roc-figure"><img src="../../../assets/images/ml-dl-concepts/roc-auc-example.svg" width="1200" height="675" alt="ROC curve for six emails. The highlighted threshold of 0.70 has FPR one third and TPR two thirds. Lowering the threshold to 0.60 moves the point straight up. The shaded area is about 0.78." /><figcaption>One row, one point. Moving up means catching more spam; moving right means more false alarms.</figcaption></figure>
+
+        <h2>Calculate the area under the curve</h2>
+        <p><strong>AUC</strong> is the size of the shaded area under the ROC curve. For this step-shaped curve, split the shaded area into rectangles and add their areas. For sloping segments, use trapezoids instead.</p>
+        <p>Both axes go from 0 to 1, so the whole square has an area of 1. Our curve covers about <strong>78% of that square</strong>, giving an <strong>AUC of about 0.78</strong>.</p>
+
+        <h2>Interpret ROC–AUC</h2>
+        <p><strong>AUC tells us how well a model can tell the two classes apart.</strong> It ranges from 0 to 1. A higher value means the model is better at giving positive cases higher scores than negative cases.</p>
+        <ul>
+          <li><strong>1.0:</strong> perfect separation. Every positive case gets a higher score than every negative case.</li>
+          <li><strong>Between 0.5 and 1.0:</strong> better than random guessing. Closer to 1 means better separation.</li>
+          <li><strong>0.5:</strong> no better than random guessing at putting positives above negatives.</li>
+          <li><strong>Below 0.5:</strong> the model tends to give higher scores to the wrong class.</li>
+        </ul>
+        <p><strong>AUC is not the percentage of correct predictions.</strong> It summarizes how well the model orders the two classes across thresholds.</p>
+        <p>You still need to choose a threshold to turn scores into predictions. That choice depends on which mistake matters more: missing a positive case or raising a false alarm.</p>
+        <section class="migration"><strong>Remember</strong><p>Change the threshold &rarr; get new counts &rarr; calculate TPR and FPR &rarr; plot one ROC point. AUC measures the area under the finished curve.</p></section>
+      </div>
+    </article>
+    <aside class="article-sidebar"><h2>Continue learning</h2><div class="related" data-related></div><div class="sidebar-note"><strong>Remember</strong><p>TPR = sensitivity<br /><br />FPR = 1 &minus; specificity</p></div></aside>
+  </main>
+  <div data-footer></div>
+  <script src="../../../assets/js/data/statistics.js"></script><script src="../../../assets/js/data/linear-algebra.js"></script><script src="../../../assets/js/data/oop.js"></script><script src="../../../assets/js/data/dsa.js"></script><script src="../../../assets/js/data/sql.js"></script><script src="../../../assets/js/data/python-concepts.js"></script><script src="../../../assets/js/data/ml-dl-concepts.js"></script><script src="../../../assets/js/site.js"></script>
+</body>
+</html>
